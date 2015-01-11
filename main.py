@@ -33,7 +33,6 @@ class Handler(webapp2.RequestHandler):
         self.write(self.render_str(template, **kw))
 class MainPage(Handler):
     def get(self):
-        #self.response.headers['Content-Type'] = 'text/html'
         self.response.out.write(forms.form)
 
 class UploadPreso(Handler):
@@ -50,13 +49,10 @@ class UploadPreso(Handler):
         f, metadata = client.get_file_and_metadata('%s'%p_name)
         self.out.write(metadata)
 
-class Auth(webapp2.RequestHandler):
+class Auth(Handler):
     def get(self):
         self.redirect("https://www.dropbox.com/1/oauth2/authorize?response_type=code&client_id=1oh7s5aa87v11ql&redirect_uri=http://localhost:9088/&state=&force_reapprove=false")
 
 
-app = webapp2.WSGIApplication([('/', MainPage),
-                                ('/init', Auth),
-                                ('/upload', UploadPreso),
-                                ('/auth', Auth)],
+app = webapp2.WSGIApplication([('/', MainPage),('/init', Auth),('/upload', UploadPreso),('/authorize', Auth)],
                                 debug=True)
