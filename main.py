@@ -16,30 +16,12 @@
 # limitations under the License.
 #
 import webapp2
-#import sys
-#import auth
-#sys.path.insert(0, 'lib') #"Old" way, not working for me.
-#sys.path.insert(1, 'auth_app')
 import setuptools
-import urllib3.util
+import urllib3
 from dropbox import *
-
-#import auth
-# Include the Dropbox SDK
 import forms
-#import secrets
 import jinja2
-#import logging
-#from sqlite3 import dbapi2 as sqlite3
 
-username = "marr.stevenmarr@gmail.com"
-#db = auth.get_db()
-
-
-class MainPage(webapp2.RequestHandler):
-    def get(self):
-        #self.response.headers['Content-Type'] = 'text/html'
-        self.response.out.write(forms.form)
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -49,26 +31,12 @@ class Handler(webapp2.RequestHandler):
         return t.render(params)
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
-
-class InitApp(webapp2.RequestHandler):
-
+class MainPage(Handler):
     def get(self):
+        #self.response.headers['Content-Type'] = 'text/html'
+        self.response.out.write(forms.form)
 
-        authorize_url = flow.start()
-        self.response.out.write('1. Go to: %s \n' %authorize_url)
-
-        self.response.out.write('<br> 2. Click "Allow" (you might have to log in first)')
-        self.response.out.write('<br> 3. Copy the authorization code.')
-        self.response.out.write(forms.auth_code_form)
-    def post(self):
-        code = self.request.get("code")
-
-        access_token, user_id = flow.finish(code)
-        client = dropbox.client.DropboxClient(access_token)
-        self.response.out.write(client)
-        self.redirect('/')
-
-class UploadPreso(InitApp):
+class UploadPreso(Handler):
     def get(self):
         self.out.write("new_preso_form")
     def post(self):
@@ -82,12 +50,13 @@ class UploadPreso(InitApp):
         f, metadata = client.get_file_and_metadata('%s'%p_name)
         self.out.write(metadata)
 
-def Auth(request):
-
-    logging.info('Starting Main handler')
-    flow.finish(request)
-    logging.info(request)
-    return None
+class Auth(webapp2.RequestHandler):
+    def get(self):
+        self.redirect("https://www.dropbox.com/1/oauth2/authorize?response_type=code&client_id=1oh7s5aa87v11ql&redirect_uri=http://localhost:9088/&state=&force_reapprove=false")
 
 
-app = webapp2.WSGIApplication([('/', MainPage),('/init', InitApp),('/upload', UploadPreso),('/auth', Auth)], debug=True)
+app = webapp2.WSGIApplication([('/', MainPage),
+                                ('/init', Auth),
+                                ('/upload', UploadPreso),
+                                ('/auth', Auth)],
+                                debug=True)
