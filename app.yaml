@@ -17,13 +17,15 @@ handlers:
 libraries:
 - name: setuptools
   version: "latest"
- 
+
 - name: ssl
   version: "latest"
- 
+
 - name: jinja2
   version: "latest"
 
 - name: webapp2
   version: "2.5.2"
 
+- name: urllib3
+  version: "latest"

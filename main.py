@@ -20,7 +20,10 @@ import webapp2
 #import auth
 #sys.path.insert(0, 'lib') #"Old" way, not working for me.
 #sys.path.insert(1, 'auth_app')
-#import dropbox
+import setuptools
+import urllib3.util
+from dropbox import *
+
 #import auth
 # Include the Dropbox SDK
 import forms
