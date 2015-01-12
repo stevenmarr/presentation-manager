@@ -18,10 +18,14 @@
 import webapp2
 import setuptools
 import urllib3
+import urllib2
+import urllib
 import logging
 from dropbox import *
 import forms
 import jinja2
+import json
+import secrets
 
 
 class Handler(webapp2.RequestHandler):
@@ -43,7 +47,7 @@ class UploadPreso(Handler):
         p_name = self.request.get("p_name")
         p_preso = self.request.get("p_preso")
         p_email = self.request.get("p_email")
-        client = client.DropboxClient(access_token)
+        client = client.DropboxClient(getOauthToken())
         f = open(p_preso, 'rb')
         response = client.put_file('%s'%p_name, f)
         self.out.write('uploaded: ', response)
@@ -52,14 +56,12 @@ class UploadPreso(Handler):
 
 class Auth(Handler):
     def get(self):
-        self.redirect("https://www.dropbox.com/1/oauth2/authorize?response_type=code&client_id=1oh7s5aa87v11ql&redirect_uri=http://localhost:8080/capture")
+        self.redirect("https://www.dropbox.com/1/oauth2/authorize?client_id=1oh7s5aa87v11ql&response_type=code&redirect_uri=http://localhost:8080/capture&state=&force_reapprove=false&disable_signup=true")
 
 class CaptureAuth(Handler):
 
-    def get(self):
-        CaptureAuth.code = self.request.get("code")
-        logging.warning("Code is: "+CaptureAuth.code)
-        self.redirect('/')
+def getOauthToken():
+    return TOKEN
 
 
 app = webapp2.WSGIApplication([('/', MainPage),('/init', Auth),('/upload', UploadPreso),('/authorize', Auth),('/capture', CaptureAuth)],
