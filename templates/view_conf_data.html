@@ -2,12 +2,20 @@
 {% block content %}
 	<h1>View Conference Speakers</h1>
 	<body>
-			<label>Name</label>
-			<br>
-		{% for conference_presenter in conference_presenters %}
-			<label>{{conference_presenter.presenter_firstname}}</label>
-			<label>{{conference_presenter.presenter_lastname}}</label>
-			<br>
-		{% endfor %}
+		<div class = "container-fluid">
+			<div class = "row-fluid">
+				<div class = "col-md-2"><label class = "title">First Name</label></div>
+				<div class = "col-md-2"><label class = "title">Last Name</label></div>
+				<div class = "col-md-7"><label class = "title">Session Name</label></div>
+				<div class = "col-md-1"><label class = "title">Room</label></div>
+				{% for conference_presenter in conference_presenters %}
+					<div class = "col-md-2"><label>{{conference_presenter.presenter_firstname}}</label></div>
+					<div class = "col-md-2"><label>{{conference_presenter.presenter_lastname}}</label></div>
+					<div class = "col-md-7"><label>{{conference_presenter.session_name}}</label></div>
+					<div class = "col-md-1"><label>{{conference_presenter.session_room}}</label></div>
+					<br>
+				{% endfor %}
+			</div>
+		</div>
 	</body>
 {% endblock %}
