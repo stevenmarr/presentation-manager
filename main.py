@@ -44,19 +44,10 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-POST_TO_DROPBOX = False
+POST_TO_DROPBOX = True
 
 class MainHandler(Handler):
     def get(self):
-        if POST_TO_DROPBOX == True:
-            for blob in blobstore:
-                logging.error(blob.filename)
-                f = blob.open()
-                filename = blob.filename+'_'+presenter_name
-                logging.error(filename)
-                response = db_client.put_file('/presos/%s' %filename, f)
-                logging.info(response)
-                f.close()
         self.render("index.html")
 
 class Admin(Handler):
@@ -89,7 +80,10 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         for entry in query_result:
             entry.blob_store_key = blob_info.key()
             entry.put()
-        self.redirect('/')
+        if POST_TO_DROPBOX == True:
+            self.redirect('/post_to_dropbox')
+        else:
+            self.redirect('/')
     """update_entry = PresenterData(presenter_firstname = entry.presenter_firstname,
                                 presenter_lastname = presenter_lastname,
                                 presenter_email = presenter_lastname,
@@ -128,12 +122,44 @@ class DeleteConferenceData(Handler):
         self.redirect('/admin')
 
 class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
-    def get(self, blob_key):
-        blob_key = str(urllib.unquote(blob_key))
-        if not blobstore.get(blob_key):
-            self.error(404)
-        else:
-            self.send_blob(blobstore.BlobInfo.get(blob_key), save_as=True)
+    def get(self):
+        query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE blob_store_key !=  NULL")
+        logging.error("query result %s"% query_result)
+        for entry in query_result:
+            logging.error("Blob key", entry.blob_store_key)
+            f = entry.blob_store_key.open()
+            #f = blob.open()
+            #logging.info(f)
+            size = entry.blob_store_key.size
+            #logging.error(size)
+            uploader = db_client.get_chunked_uploader(f, size)
+            #print "uploading: ", size
+            while uploader.offset < size:
+                try:
+                    upload = uploader.upload_chunked()
+                except rest.ErrorResponse, e:
+                    # perform error handling and retry logic
+                    logging.error(e)
+            filename = entry.presenter_lastname + entry.blob_store_key.filename
+            uploader.finish('/%s'% filename)
+            logging.info(filename)
+            f.close()
+            self.redirect('/')
+            #filename = entry.blob_store_key.filename + entry.presenter_lastname
+            #response = db_client.put_file('/presos/%s' %filename, f)
+            #logging.info(response)
+
+        #    self.send_blob(blobstore.BlobInfo.get(blob_key), save_as=True)
+        """for blob in blob_info:
+            logging.error(blob.filename)
+            f = blob.open()
+            filename = blob.filename
+            logging.error(filename)
+            response = db_client.put_file('/presos/%s' %filename, f)
+            logging.info(response)
+            f.close()"""
+
+
 
 #Database models
 class PresenterData(db.Model):
@@ -152,6 +178,7 @@ app = webapp.WSGIApplication(
            ('/post_conference_data', UploadHandlerConfData),
            ('/upload_conference_data', UploadConferenceData),
            ('/view_conference_data', ViewConferenceData),
-           ('/delete_conference_data', DeleteConferenceData)
+           ('/delete_conference_data', DeleteConferenceData),
+           ('/post_to_dropbox', ServeHandler)
 
           ], debug=True)
