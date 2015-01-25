@@ -30,10 +30,12 @@ import jinja2
 import os
 import webapp2
 import csv
+import time
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 db_client = client.DropboxClient(secrets.DB_TOKEN, "en_US", rest_client=None)
+POST_TO_DROPBOX = True
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -44,8 +46,6 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-POST_TO_DROPBOX = True
-
 class MainHandler(Handler):
     def get(self):
         self.render("index.html")
@@ -55,7 +55,7 @@ class Admin(Handler):
         self.render("admin.html")
 
 
-#Handlers for presentation upload and viewing
+#Handlers for presentation upload and blob storing
 class UploadPresentation(Handler):
         def get(self):
             upload_url = blobstore.create_upload_url('/upload')
@@ -74,7 +74,6 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         upload_files = self.get_uploads('file')
         presenter_name = self.request.get('presenter_name')
         presentation_type = self.request.get('presentation_type')
-
         blob_info = upload_files[0]
         query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_lastname =  '%s'" %str(presenter_name))
         for entry in query_result:
@@ -84,13 +83,6 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
             self.redirect('/post_to_dropbox')
         else:
             self.redirect('/')
-    """update_entry = PresenterData(presenter_firstname = entry.presenter_firstname,
-                                presenter_lastname = presenter_lastname,
-                                presenter_email = presenter_lastname,
-                                blob_store_key = blob_info.key())
-        update_entry.put()"""
-
-
 
 #Handlers for conference data
 class UploadConferenceData(Handler):
@@ -103,12 +95,16 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
         f = conference_csv_file[0].open()
         csv_f = csv.reader(f)
         for row in csv_f:
-            entry = PresenterData(presenter_firstname = row[0],
-                                    presenter_lastname = row[1],
-                                    presenter_email = row[2])
+            entry = PresenterData(presenter_firstname = row[0].replace(' ','_'),
+                                presenter_lastname = row[1].replace(' ','_'),
+                                presenter_email = row[2].replace(' ','_'),
+                                session_name = row[3].replace(' ','_'),
+                                session_room = row[4].replace(' ','_'))
+            # ADD Error testing for no data conditions
             entry.put()
         f.close()
-        self.redirect('/')
+        time.sleep(2)
+        self.redirect('/view_conference_data')
 class ViewConferenceData(Handler):
     def get(self):
         conference_data = db.GqlQuery("SELECT * FROM PresenterData")
@@ -121,29 +117,29 @@ class DeleteConferenceData(Handler):
             entry.delete()
         self.redirect('/admin')
 
+#Handler to upload presentations to DB
 class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self):
         query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE blob_store_key !=  NULL")
         logging.error("query result %s"% query_result)
         for entry in query_result:
-            logging.error("Blob key", entry.blob_store_key)
-            f = entry.blob_store_key.open()
-            #f = blob.open()
-            #logging.info(f)
-            size = entry.blob_store_key.size
-            #logging.error(size)
-            uploader = db_client.get_chunked_uploader(f, size)
-            #print "uploading: ", size
-            while uploader.offset < size:
-                try:
-                    upload = uploader.upload_chunked()
-                except rest.ErrorResponse, e:
-                    # perform error handling and retry logic
-                    logging.error(e)
-            filename = entry.presenter_lastname + entry.blob_store_key.filename
-            uploader.finish('/%s'% filename)
-            logging.info(filename)
-            f.close()
+            if entry.presentation_uploaded_to_db == False:
+                f = entry.blob_store_key.open()
+                size = entry.blob_store_key.size
+                uploader = db_client.get_chunked_uploader(f, size)
+                while uploader.offset < size:
+                    try:
+                        upload = uploader.upload_chunked()
+                    except rest.ErrorResponse, e:
+                        logging.error(e)
+                    filename = entry.presenter_lastname + '_' + entry.presenter_firstname + '_' + entry.session_name
+                    response = uploader.finish('/%s/%s/%s'% (entry.session_room, entry.presenter_lastname , filename), overwrite = True)
+                    entry.presentation_uploaded_to_db = True
+                    entry.presentation_db_path = response['mime_type']
+                    entry.presentation_db_size = response['size']
+                    entry.put()
+                    logging.info(response)
+                    f.close()
             self.redirect('/')
             #filename = entry.blob_store_key.filename + entry.presenter_lastname
             #response = db_client.put_file('/presos/%s' %filename, f)
@@ -159,15 +155,18 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
             logging.info(response)
             f.close()"""
 
-
-
 #Database models
 class PresenterData(db.Model):
-    presenter_firstname = db.StringProperty(required = True)
+    presenter_firstname = db.StringProperty(required = True, indexed = True)
     presenter_lastname = db.StringProperty(required = True)
-    presenter_email = db.StringProperty(required = True)
+    presenter_email = db.EmailProperty(required = True)
+    session_name = db.StringProperty(required = True)
+    session_room = db.StringProperty(indexed = True)
     date = db.DateTimeProperty(auto_now_add = True)
-    blob_store_key = blobstore.BlobReferenceProperty()
+    blob_store_key = blobstore.BlobReferenceProperty(default = None)
+    presentation_uploaded_to_db = db.BooleanProperty(default = False)
+    presentation_db_path = db.CategoryProperty(indexed = False, default = None)
+    presentation_db_size = db.StringProperty(default = None)
 
 app = webapp.WSGIApplication(
           [('/', MainHandler),
