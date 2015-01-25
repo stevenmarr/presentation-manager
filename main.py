@@ -23,11 +23,13 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.ext import db
 import secrets
 import logging
 import jinja2
 import os
 import webapp2
+import csv
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
@@ -45,7 +47,12 @@ class Handler(webapp2.RequestHandler):
 class MainHandler(Handler):
     def get(self):
         self.render("index.html")
+class Admin(Handler):
+    def get(self):
+        self.render("admin.html")
 
+
+#Handlers for presentation upload and viewing
 class UploadPresentation(Handler):
         def get(self):
             upload_url = blobstore.create_upload_url('/upload')
@@ -59,8 +66,6 @@ class UploadPresentation(Handler):
                 #logging.warning(f)
                 #response = db_client.put_file('/test', f)
                 self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '">' + str(b.filename) + '</a>')
-
-
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
         upload_files = self.get_uploads('file')
@@ -73,6 +78,36 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         blob_info = upload_files[0]
         self.redirect('/')
 
+
+#Handlers for conference data
+class UploadConferenceData(Handler):
+    def get(self):
+        upload_url = blobstore.create_upload_url('/post_conference_data')
+        self.render("csv_uploads.html", upload_url = upload_url)
+class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
+    def post(self):
+        conference_csv_file = self.get_uploads('csv')
+        f = conference_csv_file[0].open()
+        csv_f = csv.reader(f)
+        for row in csv_f:
+            entry = PresenterData(presenter_firstname = row[0],
+                                    presenter_lastname = row[1],
+                                    presenter_email = row[2])
+            entry.put()
+        f.close()
+        self.redirect('/')
+class ViewConferenceData(Handler):
+    def get(self):
+        conference_data = db.GqlQuery("SELECT * FROM PresenterData")
+        self.render("view_conf_data.html",
+                    conference_presenters = conference_data)
+class DeleteConferenceData(Handler):
+    def get(self):
+        conference_data = db.GqlQuery("SELECT * FROM PresenterData")
+        for entry in conference_data:
+            entry.delete()
+        self.redirect('/admin')
+
 class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self, blob_key):
         blob_key = str(urllib.unquote(blob_key))
@@ -81,8 +116,23 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
         else:
             self.send_blob(blobstore.BlobInfo.get(blob_key), save_as=True)
 
+#Database models
+class PresenterData(db.Model):
+    presenter_firstname = db.StringProperty(required = True)
+    presenter_lastname = db.StringProperty(required = True)
+    presenter_email = db.StringProperty(required = True)
+    date = db.DateTimeProperty(auto_now_add = True)
+
+
 app = webapp.WSGIApplication(
           [('/', MainHandler),
+           ('/admin', Admin),
+           ('/upload_presentation', UploadPresentation),
            ('/upload', UploadHandler),
            ('/serve/([^/]+)?', ServeHandler),
+           ('/post_conference_data', UploadHandlerConfData),
+           ('/upload_conference_data', UploadConferenceData),
+           ('/view_conference_data', ViewConferenceData),
+           ('/delete_conference_data', DeleteConferenceData)
+
           ], debug=True)
