@@ -44,9 +44,21 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+POST_TO_DROPBOX = False
+
 class MainHandler(Handler):
     def get(self):
+        if POST_TO_DROPBOX == True:
+            for blob in blobstore:
+                logging.error(blob.filename)
+                f = blob.open()
+                filename = blob.filename+'_'+presenter_name
+                logging.error(filename)
+                response = db_client.put_file('/presos/%s' %filename, f)
+                logging.info(response)
+                f.close()
         self.render("index.html")
+
 class Admin(Handler):
     def get(self):
         self.render("admin.html")
@@ -56,27 +68,34 @@ class Admin(Handler):
 class UploadPresentation(Handler):
         def get(self):
             upload_url = blobstore.create_upload_url('/upload')
-            self.response.out.write('<html><body>')
-            self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
-            self.response.out.write("""Upload File: <input type="file" name="file"><br> <input type="submit" name="submit" value="Submit"> </form></body></html>""")
-
-            for b in blobstore.BlobInfo.all():
+            entry = db.GqlQuery("SELECT * FROM PresenterData")
+            self.render("upload_presentation.html",
+                presenter_data=entry,
+                upload_url = upload_url)
+            #for b in blobstore.BlobInfo.all():
 
                 #f = b.open()
                 #logging.warning(f)
                 #response = db_client.put_file('/test', f)
-                self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '">' + str(b.filename) + '</a>')
+            #    self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '">' + str(b.filename) + '</a>')
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
         upload_files = self.get_uploads('file')
+        presenter_name = self.request.get('presenter_name')
+        presentation_type = self.request.get('presentation_type')
 
-        logging.warning(upload_files[0].open())
-
-        f = upload_files[0].open()
-        filename = upload_files[0].filename
-        response = db_client.put_file('/test/%s' %filename, f)
         blob_info = upload_files[0]
+        query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_lastname =  '%s'" %str(presenter_name))
+        for entry in query_result:
+            entry.blob_store_key = blob_info.key()
+            entry.put()
         self.redirect('/')
+    """update_entry = PresenterData(presenter_firstname = entry.presenter_firstname,
+                                presenter_lastname = presenter_lastname,
+                                presenter_email = presenter_lastname,
+                                blob_store_key = blob_info.key())
+        update_entry.put()"""
+
 
 
 #Handlers for conference data
@@ -122,7 +141,7 @@ class PresenterData(db.Model):
     presenter_lastname = db.StringProperty(required = True)
     presenter_email = db.StringProperty(required = True)
     date = db.DateTimeProperty(auto_now_add = True)
-
+    blob_store_key = blobstore.BlobReferenceProperty()
 
 app = webapp.WSGIApplication(
           [('/', MainHandler),
