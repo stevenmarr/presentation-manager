@@ -8,6 +8,8 @@ handlers:
 - url: /favicon\.ico
   static_files: favicon.ico
   upload: favicon\.ico
+- url: /css
+  static_dir: statics/css
 
 - url: /auth
   script: \auth_app\auth.app
