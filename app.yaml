@@ -13,6 +13,7 @@ handlers:
   script: \auth_app\auth.app
 - url: .*
   script: main.app
+  secure: always
 
 libraries:
 - name: setuptools
@@ -26,6 +27,3 @@ libraries:
 
 - name: webapp2
   version: "2.5.2"
-
-- name: urllib3
-  version: "latest"

@@ -24,6 +24,8 @@ from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 import secrets
+import logging
+db_client = client.DropboxClient(secrets.DB_TOKEN, "en_US", rest_client=None)
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
@@ -33,12 +35,21 @@ class MainHandler(webapp.RequestHandler):
         self.response.out.write("""Upload File: <input type="file" name="file"><br> <input type="submit" name="submit" value="Submit"> </form></body></html>""")
 
         for b in blobstore.BlobInfo.all():
-            #insert call to drop box to begin transfer process
+
+            #f = b.open()
+            #logging.warning(f)
+            #response = db_client.put_file('/test', f)
             self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '">' + str(b.filename) + '</a>')
 
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
         upload_files = self.get_uploads('file')
+
+        logging.warning(upload_files[0].open())
+
+        f = upload_files[0].open()
+        filename = upload_files[0].filename
+        response = db_client.put_file('/test/%s' %filename, f)
         blob_info = upload_files[0]
         self.redirect('/')
 
