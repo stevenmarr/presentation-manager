@@ -25,21 +25,41 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 import secrets
 import logging
+import jinja2
+import os
+import webapp2
+
+template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 db_client = client.DropboxClient(secrets.DB_TOKEN, "en_US", rest_client=None)
 
-class MainHandler(webapp.RequestHandler):
+class Handler(webapp2.RequestHandler):
+    def write(self, *a, **kw):
+        self.response.out.write(*a, **kw)
+    def render_str(self, template, **params):
+        t = jinja_env.get_template(template)
+        return t.render(params)
+    def render(self, template, **kw):
+        self.write(self.render_str(template, **kw))
+
+class MainHandler(Handler):
     def get(self):
-        upload_url = blobstore.create_upload_url('/upload')
-        self.response.out.write('<html><body>')
-        self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
-        self.response.out.write("""Upload File: <input type="file" name="file"><br> <input type="submit" name="submit" value="Submit"> </form></body></html>""")
+        self.render("index.html")
 
-        for b in blobstore.BlobInfo.all():
+class UploadPresentation(Handler):
+        def get(self):
+            upload_url = blobstore.create_upload_url('/upload')
+            self.response.out.write('<html><body>')
+            self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data">' % upload_url)
+            self.response.out.write("""Upload File: <input type="file" name="file"><br> <input type="submit" name="submit" value="Submit"> </form></body></html>""")
 
-            #f = b.open()
-            #logging.warning(f)
-            #response = db_client.put_file('/test', f)
-            self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '">' + str(b.filename) + '</a>')
+            for b in blobstore.BlobInfo.all():
+
+                #f = b.open()
+                #logging.warning(f)
+                #response = db_client.put_file('/test', f)
+                self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '">' + str(b.filename) + '</a>')
+
 
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     def post(self):
@@ -66,60 +86,3 @@ app = webapp.WSGIApplication(
            ('/upload', UploadHandler),
            ('/serve/([^/]+)?', ServeHandler),
           ], debug=True)
-
-
-
-
-"""
-
-import webapp2
-import setuptools
-import urllib3
-import urllib2
-import urllib
-import logging
-from dropbox import *
-import forms
-import jinja2
-import json
-import secrets
-
-
-class Handler(webapp2.RequestHandler):
-    def write(self, *a, **kw):
-        self.response.out.write(*a, **kw)
-    def render_str(self, template, **params):
-        t = jinja_env.get_template(template)
-        return t.render(params)
-    def render(self, template, **kw):
-        self.write(self.render_str(template, **kw))
-class MainPage(Handler):
-    def get(self):
-        self.response.out.write(forms.form)
-
-class UploadPreso(Handler):
-    def get(self):
-        self.out.write("new_preso_form")
-    def post(self):
-        p_name = self.request.get("p_name")
-        p_preso = self.request.get("p_preso")
-        p_email = self.request.get("p_email")
-        client = client.DropboxClient(getOauthToken())
-        f = open(p_preso, 'rb')
-        response = client.put_file('%s'%p_name, f)
-        self.out.write('uploaded: ', response)
-        f, metadata = client.get_file_and_metadata('%s'%p_name)
-        self.out.write(metadata)
-
-class Auth(Handler):
-    def get(self):
-        self.redirect("https://www.dropbox.com/1/oauth2/authorize?client_id=1oh7s5aa87v11ql&response_type=code&redirect_uri=http://localhost:8080/capture&state=&force_reapprove=false&disable_signup=true")
-
-class CaptureAuth(Handler):
-
-def getOauthToken():
-    return TOKEN
-
-
-app = webapp2.WSGIApplication([('/', MainPage),('/init', Auth),('/upload', UploadPreso),('/authorize', Auth),('/capture', CaptureAuth)],
-                                debug=True)"""
