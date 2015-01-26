@@ -4,15 +4,25 @@
     <head>
       <link href="/css/bootstrap.min.css" rel="stylesheet">
       <link href="/css/main.css" rel="stylesheet">
-              <title>Presentation Manager</title>
+      <title>Presentation Manager</title>
 	  </head>
-	{% block content %}
-	{% endblock %}
-
-<footer>
-  <br><br><br>
-  <a href = "/admin">Admin</a><br>
-  <a href = "/">Home</a><br>
-</footer>
-
+    <body>
+      <div class ="row-fluid header">
+        <div class="col-md-10">
+        </div>
+          <div class="col-md-1">
+            <a href = "/admin">Admin</a>
+          </div>
+          <div class="col-md-1">
+            <a href = "/">Home</a>
+          </div>
+      </div>
+      <div class = "container">
+        <div class="row-fluid">
+	         {% block content %}
+           {% endblock %}
+    </div>
+  </div>
+  </body>
+<footer></footer>
 </html>
