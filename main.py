@@ -41,7 +41,7 @@ import string
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 db_client = client.DropboxClient(secrets.DB_TOKEN, "en_US", rest_client=None)
-POST_TO_DROPBOX = True
+POST_TO_DROPBOX = False
 SESSION_NAME_RE = re.compile(r"([\S\s]){3,100}")
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -89,9 +89,11 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         presenter_name = self.request.get('presenter_name')
         presentation_type = self.request.get('presentation_type')
         blob_info = upload_files[0]
+        filename = presenter_name + '_' + blob_info.filename
         query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_lastname =  '%s'" %str(presenter_name))
         for entry in query_result:
             entry.blob_store_key = blob_info.key()
+            entry.filename = filename
             entry.put()
         if POST_TO_DROPBOX == True:
             self.redirect('/post_to_dropbox')
@@ -187,7 +189,10 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
   def get(self, resource):
     resource = str(urllib.unquote(resource))
     blob_info = blobstore.BlobInfo.get(resource)
-    self.send_blob(blob_info)
+    query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE blob_store_key = '%s'" % resource)
+    for entry in query_result:
+        filename = entry.filename
+    self.send_blob(blob_info, save_as = filename)
 
 class SignUp(Handler):
     def get(self):
@@ -313,6 +318,7 @@ class PresenterData(db.Model):
     session_room = db.StringProperty(indexed = True)
     date = db.DateTimeProperty(auto_now_add = True)
     blob_store_key = blobstore.BlobReferenceProperty(default = None)
+    filename = db.StringProperty()
     presentation_uploaded_to_db = db.BooleanProperty(default = False)
     presentation_db_path = db.CategoryProperty(indexed = False, default = None)
     presentation_db_size = db.StringProperty(default = None)
