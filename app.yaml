@@ -11,8 +11,6 @@ handlers:
 - url: /css
   static_dir: statics/css
 
-- url: /auth
-  script: \auth_app\auth.app
 - url: .*
   script: main.app
   secure: always
