@@ -159,7 +159,7 @@ class DeleteConferenceData(Handler):
         self.redirect('/admin')
 
 #Handler to upload presentations to DB
-class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
+class CopyBlobstoreToDropBox(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self):
         query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE blob_store_key !=  NULL")
         logging.error("query result %s"% query_result)
@@ -182,6 +182,12 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
                     logging.info(response)
                     f.close()
             self.redirect('/')
+
+class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
+  def get(self, resource):
+    resource = str(urllib.unquote(resource))
+    blob_info = blobstore.BlobInfo.get(resource)
+    self.send_blob(blob_info)
 
 class SignUp(Handler):
     def get(self):
@@ -208,6 +214,12 @@ class SignUp(Handler):
             return True
         else:
             return False
+
+class DiplayAllPresentersAndPresentations(Handler):
+    def get(self):
+        db_entries = db.GqlQuery("SELECT * FROM PresenterData")
+        self.render("view_all_data.html",
+                    db_entries = db_entries)
 
 
 class AddPresenter(Handler):
@@ -316,8 +328,10 @@ app = webapp.WSGIApplication(
            ('/upload_conference_data/([a-z_A-Z-]+)', UploadConferenceData),
            ('/view_conference_data', ViewConferenceData),
            ('/delete_conference_data', DeleteConferenceData),
-           ('/post_to_dropbox', ServeHandler),
+           ('/post_to_dropbox', CopyBlobstoreToDropBox),
            ('/register_user', SignUp),
-           ('/add_presenter', AddPresenter)
+           ('/add_presenter', AddPresenter),
+           ('/serve/([^/]+)?', ServeHandler),
+           ('/display_all', DiplayAllPresentersAndPresentations)
 
           ], debug=True)
