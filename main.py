@@ -182,19 +182,6 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
                     logging.info(response)
                     f.close()
             self.redirect('/')
-            #filename = entry.blob_store_key.filename + entry.presenter_lastname
-            #response = db_client.put_file('/presos/%s' %filename, f)
-            #logging.info(response)
-
-        #    self.send_blob(blobstore.BlobInfo.get(blob_key), save_as=True)
-        """for blob in blob_info:
-            logging.error(blob.filename)
-            f = blob.open()
-            filename = blob.filename
-            logging.error(filename)
-            response = db_client.put_file('/presos/%s' %filename, f)
-            logging.info(response)
-            f.close()"""
 
 class SignUp(Handler):
     def get(self):
@@ -245,36 +232,13 @@ class AddPresenter(Handler):
             self.redirect('/view_conference_data')
         else: self.redirect('/add_presenter')
 
-        """if self.validate_user_name(presenter_firstname) == False: #check if first_name matches RE
-            error_user_name = "Invalid User Name"
-            presenter_firstname = ""
-            self.write_form(presenter_firstname, presenter_lastname, presenter_email, session_name, session_room,
-                            error_user_name, error_email, error_session_name)
-        else:
-            error_user_name = ""
-        if self.validate_user_name(presenter_firstname) == False: #check if last_name matches RE
-            error_user_name = "Invalid User Name"
-            presenter_lastname = ""
-            self.write_form(presenter_firstname, presenter_lastname, presenter_email, session_name, session_room,
-                            error_user_name, error_email, error_session_name)
-        else:
-            error_user_name = ""
-        if self.validate_new_email(presenter_email) == False: #check if first_name matches RE
-            error_email = "Invalid Email Adress"
-            presenter_email = ""
-            self.write_form(presenter_firstname, presenter_lastname, presenter_email, session_name, session_room,
-                            error_user_name, error_email, error_session_name)
-        else:
-            error_email = """
-
-
     def write_form(self, first_name = "", last_name = "", email = "", session_name = "", session_room = "",
                     error_user_name="", error_email="", error_session_name=""):
         self.render("add_presenter.html", first_name = first_name, last_name = last_name,
                     email = email, session_name = session_name, session_room = session_room,
                     error_user_name = error_user_name, error_email = error_email,
                     error_session_name = error_session_name)
-
+#Data validation helper functions *****************
 def validate_new_email(email):
     if EMAIL_RE.match(email) != None:
         query_results = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_email = '%s'" % email)
@@ -299,7 +263,7 @@ def validate_name(name):
     else:
         return False
 
-#SALT FUNCTIONS ************************
+#Password Helper Functions ************************
 def hash_str(s):
     return hmac.new(secrets.SALT, s).hexdigest()
 
@@ -326,7 +290,7 @@ def valid_pw(name, pw, h):
     if h == make_pw_hash(name, pw, salt):
         return True
 
-#Database models
+#Database models ************************
 class PresenterData(db.Model):
     presenter_firstname = db.StringProperty(required = True, indexed = True)
     presenter_lastname = db.StringProperty(required = True)
@@ -340,7 +304,7 @@ class PresenterData(db.Model):
     presentation_uploaded_to_db = db.BooleanProperty(default = False)
     presentation_db_path = db.CategoryProperty(indexed = False, default = None)
     presentation_db_size = db.StringProperty(default = None)
-
+#Handler lookups *************************
 app = webapp.WSGIApplication(
           [('/', MainHandler),
            ('/admin', Admin),
