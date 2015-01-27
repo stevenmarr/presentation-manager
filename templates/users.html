@@ -1,0 +1,34 @@
+{% extends "head.html" %}
+{% block content %}
+    <h1>
+        Manage Users
+    </h1>
+    <h2>
+        Super users - full data base access - add super users and users -
+    </h2>
+
+      {% for super_user in super_users %}
+        <label>{{super_user.first_name}}</label>
+        <label>{{super_user.first_name}}</label>
+        <label>{{super_user.email}}</label>
+          {% if super_user.first_name  %}
+            <a href = "/delete_user/{{super_user.email}}">delete</a><br>
+          {% else %}
+            <div></div><br>
+          {% endif %}{}<a href = "/delete_user/{{super_user.email}}">delete</a><br>
+      {end for}
+      
+      <form action = "/add_super_user" method = "post">
+        <div class = "<!-- -->"><label>First Name</label>
+        <br /><input type = "textarea" rows="4" cols="100"  name = "first_name" value = {{first_name}}><label style="color: red">{{error_user_name}}</label></div>
+        <br />
+        <div class = "<!-- -->"><label>Last Name</label>
+          <br /><input type = "textarea" rows="4" cols="100" name = "last_name" value = {{last_name}}><label style="color: red">{{error_user_name}}</label></div>
+          <br />
+          <div class = "<!-- -->"><label>Email</label>
+            <br /><input type = "textarea" rows="4" cols="100" name = "email" value = {{email}}><label style="color: red">{{error_email}}</label></div>
+            <br />
+            <input type = "submit">
+          </form>
+
+    {% endblock %}
