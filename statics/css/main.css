@@ -1,23 +1,39 @@
 body
 {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; width: 1024px; margin: 0 auto; padding: 10px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; width: 1280px; margin: 0 auto; padding: 10px;
   background-color: #c0c0c0;
 }
 .container{background-color: #ffffff;
+  width: 1360px;
+  margin-left: auto;
+  margin-right: auto;
+  height: auto;
 }
 .header{
   background-color: #830300;
-  height: 20px;
-  width: 1024px;
+  height: 40px;
+  width: 1360px;
   margin-top: 0px;
+  margin-left: auto;
+  margin-right: auto;
+
 }
 .header a {padding-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
 }
+
+b{
+  color: grey;
+}
+
 
 footer{
   background-color: #830300;
   height: 30px;
-  width: 1024px;
+  width: 1360px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 h1{
@@ -29,6 +45,30 @@ h1{
 .title{
   color: black; font-size: 16px
 }
-input[type=submit]{
-  font-size: 24px;
+/*input[type=submit]{
+  font-size: 12px;
+
+}*/
+input[type=submit] {
+  border-radius: 5px;
+  border: 0;
+  width: 160px;
+  height:25px;
+  font-family: Tahoma;
+  background: #f4f4f4;
+  /* Old browsers */
+  background: -moz-linear-gradient(top, #f4f4f4 1%, #ededed 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(1%, #f4f4f4), color-stop(100%, #ededed));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #f4f4f4 1%, #ededed 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #f4f4f4 1%, #ededed 100%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #f4f4f4 1%, #ededed 100%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #f4f4f4 1%, #ededed 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f4f4f4', endColorstr='#ededed', GradientType=0);
+  /* IE6-9 */
 }
