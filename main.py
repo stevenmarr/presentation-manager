@@ -70,6 +70,25 @@ class Handler(webapp2.RequestHandler):
         self.request.cookies.get('user_type', None)
         if validate_super_user(self.email): return True
         return True
+    def validate_email_password(self, email, password):
+        query_results = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
+        for result in query_results:
+            logging.info(result.password)
+            if result.user_email:
+                if result.password == make_pw_hash(email, password):
+                    #logging.info(result.password)
+                    self.set_hash_cookie('user_type', result.user_type)
+                    self.set_hash_cookie('email', result.user_email)
+                    return True
+        logging.info(result.password)
+        return None
+        #    """else:
+        #        query_results = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
+        #        for result in query_results:
+        #            if result.user_email:
+        #                if result.password == make_pw_hash(email, password):
+        #                    self.set_hash_cookie('user', entry.user_type)
+        #                    return True"""
 
 
 class MainHandler(Handler):
@@ -126,16 +145,16 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
         f = conference_csv_file[0].open()
         csv_f = csv.reader(f)
         for row in csv_f:
-            presenter_firstname = validate_name(row[0])
-            if presenter_firstname == False:
+            firstname = validate_name(row[0])
+            if firstname == False:
                 logging.error("CSV Import error First Name")
                 logging.error(row[0])
-            presenter_lastname = validate_name(row[1])
-            if presenter_lastname == False:
+            lastname = validate_name(row[1])
+            if lastname == False:
                 logging.error("CSV Import error Last Name")
                 logging.error(row[1])
-            presenter_email = validate_email(row[2])
-            if presenter_email == False:
+            email = validate_email(row[2])
+            if email == False:
                 logging.error("CSV Import error Email")
                 logging.error(row[2])
             session_name = validate_entry(row[3])
@@ -146,12 +165,15 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
             if session_room == False:
                 logging.error("CSV Import error Session Room")
                 logging.error(row[4])
-            if (presenter_firstname and presenter_lastname and presenter_email and session_name and session_room):
-                entry = PresenterData(presenter_firstname = presenter_firstname,
-                                  presenter_lastname = presenter_lastname,
-                                  presenter_email = presenter_email,
+            if (firstname and lastname and email and session_name and session_room):
+                entry = PresenterData(presenter_firstname = firstname,
+                                  presenter_lastname = lastname,
+                                  presenter_email = email,
                                   session_name = session_name,
                                   session_room = session_room)
+                entry.put()
+                entry = User(user_firstname = firstname, user_lastname = lastname,
+                            user_email = email, user_type = 'PRESENTER')
                 entry.put()
             else:
                 self.redirect('/upload_conference_data/Error-CSV-File-is-an-incorrect-format-or-contains-duplicate-entries-see-readme-for-formatting')
@@ -214,17 +236,14 @@ class SignUp(Handler):
 
     def post(self):
         email = self.request.get('email')
-        user_name = self.request.get('user_name')
-        if confirmed_presenter(email) == False:
-            self.redirect('/register_user')
+
         password_1 = self.request.get('password')
         password_2 = self.request.get('verify')
         if password_1 == password_2:
             if self.validate_password(password_1) == False:
                 self.redirect('/register_user')
-        query_results = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_email = '%s'" % email)
+        query_results = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
         for entry in query_results:
-            entry.username = user_name
             entry.password = make_pw_hash(email, password_1)
             entry.put()
         self.redirect("/")
@@ -233,6 +252,17 @@ class SignUp(Handler):
             return True
         else:
             return False
+class Login(Handler):
+    def get(self):
+        self.render("login.html", username = "", password = "")
+    def post(self):
+        email = self.request.get('email')
+        password = self.request.get('password')
+        logging.info(email)
+        if self.validate_email_password(email, password):
+            self.redirect('/')
+        else: self.render("login.html")
+
 
 class DiplayAllPresentersAndPresentations(Handler):
     def get(self):
@@ -284,7 +314,7 @@ class AddPresenter(Handler):
             time.sleep(2)
             self.redirect('/view_conference_data')
         else: self.redirect('/add_presenter')
-
+#TODO clean up write forms
     def write_form(self, first_name = "", last_name = "", email = "", session_name = "", session_room = "",
                     error_user_name="", error_email="", error_session_name=""):
         self.render("add_presenter.html", first_name = first_name, last_name = last_name,
@@ -328,7 +358,7 @@ def check_secure_val(h):
 def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
-def make_pw_hash(name, pw, salt=None):
+def make_pw_hash(name, pw, salt="123"):
     if salt == None:
         salt = make_salt()
     h = hashlib.sha256(name + pw + salt).hexdigest()
@@ -353,7 +383,6 @@ class PresenterData(db.Model):
     presenter_lastname = db.StringProperty(required = True)
     presenter_email = db.EmailProperty(required = True)
     username = db.StringProperty()
-    password = db.StringProperty(indexed = False, default = None)
     session_name = db.StringProperty(required = False)
     session_room = db.StringProperty(indexed = True)
     date = db.DateTimeProperty(auto_now_add = True)
@@ -362,11 +391,13 @@ class PresenterData(db.Model):
     presentation_uploaded_to_db = db.BooleanProperty(default = False)
     presentation_db_path = db.CategoryProperty(indexed = False, default = None)
     presentation_db_size = db.StringProperty(default = None)
+    user_type = db.StringProperty(required = True, default = "PRESENTER")
 #Handler lookups *************************
 
 class User(db.Model):
     user_firstname = db.StringProperty(required = True, indexed = True)
     user_lastname = db.StringProperty(required = True)
+    password = db.StringProperty(indexed = False, default = None)
     user_email = db.EmailProperty(required = True)
     user_type = db.StringProperty(required = True, default = "PRESENTER") #types GOD, SUPER_USER, USER, PRESENTER
 
@@ -387,6 +418,7 @@ app = webapp.WSGIApplication(
            ('/serve/([^/]+)?', ServeHandler),
            ('/display_all', DiplayAllPresentersAndPresentations),
            ('/manage_user/([a-z_A-Z-]?)', ManageUsers),
-           ('/delete_user/([\S]+@[\S]+\.[\S]{3})', DeleteUser)
+           ('/delete_user/([\S]+@[\S]+\.[\S]{3})', DeleteUser),
+           ('/login', Login)
 
           ], debug=True)
