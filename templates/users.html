@@ -4,31 +4,52 @@
         Manage Users
     </h1>
     <h2>
-        Super users - full data base access - add super users and users -
+        Super users
     </h2>
 
       {% for super_user in super_users %}
-        <label>{{super_user.first_name}}</label>
-        <label>{{super_user.first_name}}</label>
-        <label>{{super_user.email}}</label>
-          {% if super_user.first_name  %}
-            <a href = "/delete_user/{{super_user.email}}">delete</a><br>
+        <div class = "col-xs-3"><label>{{super_user.user_firstname}}</label></div>
+        <div class = "col-xs-3"><label>{{super_user.user_lastname}}</label></div>
+        <div class = "col-xs-3"><label>{{super_user.user_email}}</label></div>
+          {% if super_user.user_firstname  %}
+          <div class = "col-xs-3"><a href = "/delete_user/{{super_user.user_email}}">delete</a></div>
           {% else %}
-            <div></div><br>
-          {% endif %}{}<a href = "/delete_user/{{super_user.email}}">delete</a><br>
-      {end for}
-      
-      <form action = "/add_super_user" method = "post">
-        <div class = "<!-- -->"><label>First Name</label>
-        <br /><input type = "textarea" rows="4" cols="100"  name = "first_name" value = {{first_name}}><label style="color: red">{{error_user_name}}</label></div>
-        <br />
-        <div class = "<!-- -->"><label>Last Name</label>
-          <br /><input type = "textarea" rows="4" cols="100" name = "last_name" value = {{last_name}}><label style="color: red">{{error_user_name}}</label></div>
-          <br />
-          <div class = "<!-- -->"><label>Email</label>
-            <br /><input type = "textarea" rows="4" cols="100" name = "email" value = {{email}}><label style="color: red">{{error_email}}</label></div>
-            <br />
+          <div class = "col-xs-3"></div><br>
+          {% endif %}
+          <br><br>
+     {% endfor %}
+    <div>
+      <br>
+     <h2>
+       Add new super user
+     </h2>
+    </div>
+      <form  method = "post">
+        <div class = "col-xs-3">
+          <label>First Name</label>
+          <input type = "textbox" name = "first_name" value = {{first_name}}>
+          <label style="color: red">{{error_user_name}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <label>Last Name</label>
+          <input type = "textbox" name = "last_name" value = {{last_name}}>
+          <label style="color: red">{{error_user_name}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <label>Email</label>
+          <input type = "textbox"rows="4" cols="100" name = "email" value = {{email}}>
+          <label style="color: red">{{error_email}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <label>Super user</label>
+          <input type = radio name = "user_type" value = "super_user" checked>
+        </div>
+
+        <br>
+        <br>
+        <div>
             <input type = "submit">
-          </form>
+        </div>
+      </form>
 
     {% endblock %}
