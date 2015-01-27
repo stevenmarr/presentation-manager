@@ -1,0 +1,21 @@
+
+{% extends "head.html" %}
+{% block content %}
+        <h1>Login</h1>
+    <div>
+        <form method = "post">
+                    <br>
+                <label>Email
+                    <input type = "text" name = "email" value = {{email}}><label style="color: red">{{error_email}}</label>
+                </label>
+                    <br>
+                <label>Password
+                    <input type = "password" name = "password" value = {{password_1}}><label style="color: red">{{error_password}}</label>
+                </label>
+                    <br>
+            <input type = "submit">
+        </form>
+    </div>
+    </body>
+</html>
+{% endblock %}
