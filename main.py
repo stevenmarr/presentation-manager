@@ -244,8 +244,8 @@ class DiplayAllPresentersAndPresentations(Handler):
 class ManageUsers(Handler):
     def get(self, error = ""):
         if self.validate_super_user():
-            super_users = db.GqlQuery("SELECT * FROM User WHERE user_type = 'SUPER_USER'")
-            self.render("users.html", super_users = super_users, error = error)
+            users = db.GqlQuery("SELECT * FROM User WHERE user_type != 'PRESENTER'")
+            self.render("users.html", users = users, error = error)
         else: self.redirect('/')
     def post(self, error):
         #TODO: Add handling for bad entry.
@@ -261,7 +261,6 @@ class ManageUsers(Handler):
                         user_type = user_type.upper())
             entry.put()
             time.sleep(2)
-        #logging.error(user_firstname, user_lastname, user_email, user_type)
         self.redirect('/manage_user/')
 
 class AddPresenter(Handler):
@@ -341,7 +340,13 @@ def valid_pw(name, pw, h):
     if h == make_pw_hash(name, pw, salt):
         return True
 
-
+class DeleteUser(Handler):
+    def get(self, email):
+        user = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
+        for deleted_user in user:
+            deleted_user.delete()
+        time.sleep(1)
+        self.redirect('/manage_user/')
 #Database models ************************
 class PresenterData(db.Model):
     presenter_firstname = db.StringProperty(required = True, indexed = True)
@@ -381,6 +386,7 @@ app = webapp.WSGIApplication(
            ('/add_presenter', AddPresenter),
            ('/serve/([^/]+)?', ServeHandler),
            ('/display_all', DiplayAllPresentersAndPresentations),
-           ('/manage_user/([a-z_A-Z-]?)', ManageUsers)
+           ('/manage_user/([a-z_A-Z-]?)', ManageUsers),
+           ('/delete_user/([\S]+@[\S]+\.[\S]{3})', DeleteUser)
 
           ], debug=True)
