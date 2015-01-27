@@ -57,6 +57,20 @@ class Handler(webapp2.RequestHandler):
         return t.render(params)
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
+    def set_hash_cookie(self, name, val):
+        cookie_name = str(name)
+        cookie_value = str(make_secure_val(val))
+        self.response.headers.add_header('Set-Cookie','%s=%s; Path=/' % (cookie_name, cookie_value))
+    def validate_super_user(self):
+        self.request.cookies.get('user_type', None)
+        #TODO Build helper method
+        return True
+    def validate_user(self, email):
+        #TODO Build helper method
+        self.request.cookies.get('user_type', None)
+        if validate_super_user(self.email): return True
+        return True
+
 
 class MainHandler(Handler):
     def get(self):
@@ -120,7 +134,7 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
             if presenter_lastname == False:
                 logging.error("CSV Import error Last Name")
                 logging.error(row[1])
-            presenter_email = validate_new_email(row[2])
+            presenter_email = validate_email(row[2])
             if presenter_email == False:
                 logging.error("CSV Import error Email")
                 logging.error(row[2])
@@ -222,10 +236,33 @@ class SignUp(Handler):
 
 class DiplayAllPresentersAndPresentations(Handler):
     def get(self):
-        db_entries = db.GqlQuery("SELECT * FROM PresenterData")
-        self.render("view_all_data.html",
+        if self.validate_user():
+            db_entries = db.GqlQuery("SELECT * FROM PresenterData")
+            self.render("view_all_data.html",
                     db_entries = db_entries)
 
+class ManageUsers(Handler):
+    def get(self, error = ""):
+        if self.validate_super_user():
+            super_users = db.GqlQuery("SELECT * FROM User WHERE user_type = 'SUPER_USER'")
+            self.render("users.html", super_users = super_users, error = error)
+        else: self.redirect('/')
+    def post(self, error):
+        #TODO: Add handling for bad entry.
+        user_firstname = validate_name(self.request.get('first_name'))
+        user_lastname = validate_name(self.request.get('last_name'))
+        user_email = validate_email(self.request.get('email'))
+        user_type = self.request.get('user_type')
+        self.write(user_email)
+        if user_firstname and user_lastname and user_email:
+            entry = User(user_firstname = user_firstname,
+                        user_lastname = user_lastname,
+                        user_email = user_email,
+                        user_type = user_type.upper())
+            entry.put()
+            time.sleep(2)
+        #logging.error(user_firstname, user_lastname, user_email, user_type)
+        self.redirect('/manage_user/')
 
 class AddPresenter(Handler):
     def get(self):
@@ -234,7 +271,7 @@ class AddPresenter(Handler):
         #TODO: Add handling for bad entry.
         presenter_firstname = validate_name(self.request.get('first_name'))
         presenter_lastname = validate_name(self.request.get('last_name'))
-        presenter_email = validate_new_email(self.request.get('email'))
+        presenter_email = validate_email(self.request.get('email'))
         session_name = validate_entry(self.request.get('session_name'))
         session_room = validate_entry(self.request.get('session_room'))
         if presenter_firstname and presenter_lastname and presenter_email and session_name:
@@ -256,14 +293,11 @@ class AddPresenter(Handler):
                     error_user_name = error_user_name, error_email = error_email,
                     error_session_name = error_session_name)
 #Data validation helper functions *****************
-def validate_new_email(email):
-    if EMAIL_RE.match(email) != None:
-        query_results = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_email = '%s'" % email)
-        for entry in query_results:
-            return False
+def validate_email(email):
+    if EMAIL_RE.match(email):
         return email
     else:
-        return False
+        return None
 def confirmed_presenter(email):
     query_results = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_email = '%s'" % email)
     for entry in query_results:
@@ -275,10 +309,10 @@ def validate_entry(name):
     else:
         return False
 def validate_name(name):
-    if USER_RE.match(name) != None:
+    if USER_RE.match(name):
         return name
     else:
-        return False
+        return None
 
 #Password Helper Functions ************************
 def hash_str(s):
@@ -307,6 +341,7 @@ def valid_pw(name, pw, h):
     if h == make_pw_hash(name, pw, salt):
         return True
 
+
 #Database models ************************
 class PresenterData(db.Model):
     presenter_firstname = db.StringProperty(required = True, indexed = True)
@@ -323,6 +358,13 @@ class PresenterData(db.Model):
     presentation_db_path = db.CategoryProperty(indexed = False, default = None)
     presentation_db_size = db.StringProperty(default = None)
 #Handler lookups *************************
+
+class User(db.Model):
+    user_firstname = db.StringProperty(required = True, indexed = True)
+    user_lastname = db.StringProperty(required = True)
+    user_email = db.EmailProperty(required = True)
+    user_type = db.StringProperty(required = True, default = "PRESENTER") #types GOD, SUPER_USER, USER, PRESENTER
+
 app = webapp.WSGIApplication(
           [('/', MainHandler),
            ('/admin', Admin),
@@ -338,6 +380,7 @@ app = webapp.WSGIApplication(
            ('/register_user', SignUp),
            ('/add_presenter', AddPresenter),
            ('/serve/([^/]+)?', ServeHandler),
-           ('/display_all', DiplayAllPresentersAndPresentations)
+           ('/display_all', DiplayAllPresentersAndPresentations),
+           ('/manage_user/([a-z_A-Z-]?)', ManageUsers)
 
           ], debug=True)
