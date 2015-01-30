@@ -24,11 +24,13 @@ from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
-import secrets
+
 import logging
 import jinja2
 import os
 import webapp2
+from webapp2_extras import securecookie
+from webapp2_extras import security
 import csv
 import time
 import re
@@ -37,18 +39,19 @@ import hashlib
 import hmac
 import string
 
+import secrets
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 db_client = client.DropboxClient(secrets.DB_TOKEN, "en_US", rest_client=None)
 POST_TO_DROPBOX = False
 SESSION_NAME_RE = re.compile(r"([\S\s]){3,100}")
-
+secure_cookies = securecookie.SecureCookieSerializer(secrets.SECURE_COOKIE)
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PASS_RE = re.compile(r"^.{3,20}$")
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
 
-
+#TODO change sign_in.html to sign_up.html
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
@@ -57,39 +60,29 @@ class Handler(webapp2.RequestHandler):
         return t.render(params)
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
-    def set_hash_cookie(self, name, val):
-        cookie_name = str(name)
-        cookie_value = str(make_secure_val(val))
-        self.response.headers.add_header('Set-Cookie','%s=%s; Path=/' % (cookie_name, cookie_value))
+#    def set_hash_cookie(self, name, val):
+#        cookie_name = str(name)
+#        cookie_value = str(make_secure_val(val))
+#        self.response.headers.add_header('Set-Cookie','%s=%s; Path=/' % (cookie_name, cookie_value))
     def validate_super_user(self):
         self.request.cookies.get('user_type', None)
         #TODO Build helper method
         return True
-    def validate_user(self, email):
+    def validate_user(self):
         #TODO Build helper method
         self.request.cookies.get('user_type', None)
-        if validate_super_user(self.email): return True
+        if self.validate_super_user(self.email): return True
         return True
-    def validate_email_password(self, email, password):
-        query_results = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
-        for result in query_results:
-            logging.info(result.password)
-            if result.user_email:
-                if result.password == make_pw_hash(email, password):
-                    #logging.info(result.password)
-                    self.set_hash_cookie('user_type', result.user_type)
-                    self.set_hash_cookie('email', result.user_email)
-                    return True
-        logging.info(result.password)
-        return None
-        #    """else:
-        #        query_results = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
-        #        for result in query_results:
-        #            if result.user_email:
-        #                if result.password == make_pw_hash(email, password):
-        #                    self.set_hash_cookie('user', entry.user_type)
-        #                    return True"""
-
+    def validate_email(self, email):
+        if EMAIL_RE.match(email):
+            return email.lower()
+        else:
+            return None
+    def validate_password_fmt(self, password):
+        if password == "":
+            return None
+        #TODO Enter RE for password verification
+        return password
 
 class MainHandler(Handler):
     def get(self):
@@ -123,7 +116,7 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
         presentation_type = self.request.get('presentation_type')
         blob_info = upload_files[0]
         filename = presenter_name + '_' + blob_info.filename
-        query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_lastname =  '%s'" %str(presenter_name))
+        query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE lastname =  '%s'" %str(presenter_name))
         for entry in query_result:
             entry.blob_store_key = blob_info.key()
             entry.filename = filename
@@ -145,6 +138,7 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
         f = conference_csv_file[0].open()
         csv_f = csv.reader(f)
         for row in csv_f:
+            #TODO error handling for uncompatable CSV file
             firstname = validate_name(row[0])
             if firstname == False:
                 logging.error("CSV Import error First Name")
@@ -166,14 +160,14 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
                 logging.error("CSV Import error Session Room")
                 logging.error(row[4])
             if (firstname and lastname and email and session_name and session_room):
-                entry = PresenterData(presenter_firstname = firstname,
-                                  presenter_lastname = lastname,
-                                  presenter_email = email,
+                entry = PresenterData(firstname = firstname,
+                                  lastname = lastname,
+                                  email = email,
                                   session_name = session_name,
                                   session_room = session_room)
                 entry.put()
-                entry = User(user_firstname = firstname, user_lastname = lastname,
-                            user_email = email, user_type = 'PRESENTER')
+                entry = User(firstname = firstname, lastname = lastname,
+                            email = email, user_type = 'PRESENTER')
                 entry.put()
             else:
                 self.redirect('/upload_conference_data/Error-CSV-File-is-an-incorrect-format-or-contains-duplicate-entries-see-readme-for-formatting')
@@ -211,8 +205,8 @@ class CopyBlobstoreToDropBox(blobstore_handlers.BlobstoreDownloadHandler):
                         upload = uploader.upload_chunked()
                     except rest.ErrorResponse, e:
                         logging.error(e)
-                    filename = entry.presenter_lastname + '_' + entry.presenter_firstname + '_' + entry.session_name
-                    response = uploader.finish('/%s/%s/%s'% (entry.session_room, entry.presenter_lastname , filename), overwrite = True)
+                    filename = entry.lastname + '_' + entry.firstname + '_' + entry.session_name
+                    response = uploader.finish('/%s/%s/%s'% (entry.session_room, entry.lastname , filename), overwrite = True)
                     entry.presentation_uploaded_to_db = True
                     entry.presentation_db_path = response['mime_type']
                     entry.presentation_db_size = response['size']
@@ -242,9 +236,9 @@ class SignUp(Handler):
         if password_1 == password_2:
             if self.validate_password(password_1) == False:
                 self.redirect('/register_user')
-        query_results = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
+        query_results = db.GqlQuery("SELECT * FROM User WHERE email = '%s'" % email)
         for entry in query_results:
-            entry.password = make_pw_hash(email, password_1)
+            entry.password = security.generate_password_hash(password_1, method='sha1', length=22, pepper=None)
             entry.put()
         self.redirect("/")
     def validate_password(self, password_1):
@@ -256,12 +250,36 @@ class Login(Handler):
     def get(self):
         self.render("login.html", username = "", password = "")
     def post(self):
-        email = self.request.get('email')
-        password = self.request.get('password')
-        logging.info(email)
-        if self.validate_email_password(email, password):
-            self.redirect('/')
-        else: self.render("login.html")
+        email = self.validate_email(self.request.get('email'))
+        password = self.validate_password_fmt(self.request.get('password'))
+        #self.render("index.html", error = "CHEESE")
+        if email == None:
+            self.render("login.html", error_email = "Please enter your email address",
+                                      error_password = "")
+        elif password == None:
+            self.render("login.html", error_email = "",
+                                      error_password = "Please enter your password")
+        elif email and password:
+            query_result = db.GqlQuery("SELECT * FROM User WHERE email = '%s'" % email)
+            if query_result:
+                for user in query_result:
+                    if user.password == None:
+                        self.render('sign_in.html', error = "Please register your account to continue")
+                    elif user.email and user.password:
+                        if security.check_password_hash(password, user.password, pepper=None):
+                            serialized_value = secure_cookies.serialize(user.email, user.user_type)
+                            self.response.set_cookie('user_type', serialized_value, path='/')
+                            #TODO enable sessions
+                            self.redirect('/')
+                        else:
+                            self.write
+                            self.render("login.html", error = "Incorrect Password, please try again")
+                    else:
+                        self.render("login.html", error = "Incorect username or password, please try again")
+            else:
+                self.render("index.html", error = "No user account")
+        else:
+            self.render("login.html", error_email = "Invalid Entry", error_password = "Invalid Entry")
 
 
 class DiplayAllPresentersAndPresentations(Handler):
@@ -279,15 +297,15 @@ class ManageUsers(Handler):
         else: self.redirect('/')
     def post(self, error):
         #TODO: Add handling for bad entry.
-        user_firstname = validate_name(self.request.get('first_name'))
-        user_lastname = validate_name(self.request.get('last_name'))
-        user_email = validate_email(self.request.get('email'))
+        firstname = validate_name(self.request.get('first_name'))
+        lastname = validate_name(self.request.get('last_name'))
+        email = self.validate_email(self.request.get('email'))
         user_type = self.request.get('user_type')
-        self.write(user_email)
-        if user_firstname and user_lastname and user_email:
-            entry = User(user_firstname = user_firstname,
-                        user_lastname = user_lastname,
-                        user_email = user_email,
+        self.write(email)
+        if firstname and lastname and email:
+            entry = User(firstname = firstname,
+                        lastname = lastname,
+                        email = email,
                         user_type = user_type.upper())
             entry.put()
             time.sleep(2)
@@ -298,16 +316,16 @@ class AddPresenter(Handler):
         self.render("add_presenter.html")
     def post(self):
         #TODO: Add handling for bad entry.
-        presenter_firstname = validate_name(self.request.get('first_name'))
-        presenter_lastname = validate_name(self.request.get('last_name'))
-        presenter_email = validate_email(self.request.get('email'))
+        firstname = validate_name(self.request.get('first_name'))
+        lastname = validate_name(self.request.get('last_name'))
+        email = validate_email(self.request.get('email'))
         session_name = validate_entry(self.request.get('session_name'))
         session_room = validate_entry(self.request.get('session_room'))
-        if presenter_firstname and presenter_lastname and presenter_email and session_name:
+        if firstname and lastname and email and session_name:
 
-            entry = PresenterData(presenter_firstname = presenter_firstname,
-                                                presenter_lastname = presenter_lastname,
-                                                presenter_email = presenter_email,
+            entry = PresenterData(firstname = firstname,
+                                                lastname = lastname,
+                                                email = email,
                                                 session_name = str(session_name),
                                                 session_room = session_room)
             entry.put()
@@ -328,7 +346,7 @@ def validate_email(email):
     else:
         return None
 def confirmed_presenter(email):
-    query_results = db.GqlQuery("SELECT * FROM PresenterData WHERE presenter_email = '%s'" % email)
+    query_results = db.GqlQuery("SELECT * FROM PresenterData WHERE email = '%s'" % email)
     for entry in query_results:
         return True
     return False
@@ -343,45 +361,18 @@ def validate_name(name):
     else:
         return None
 
-#Password Helper Functions ************************
-def hash_str(s):
-    return hmac.new(secrets.SALT, s).hexdigest()
-
-def make_secure_val(s):
-    return "%s|%s" % (s, hash_str(s))
-
-def check_secure_val(h):
-    val = h.split('|')[0]
-    if h == make_secure_val(val):
-        return val
-
-def make_salt():
-    return ''.join(random.choice(string.letters) for x in xrange(5))
-
-def make_pw_hash(name, pw, salt="123"):
-    if salt == None:
-        salt = make_salt()
-    h = hashlib.sha256(name + pw + salt).hexdigest()
-    return '%s,%s' % (h, salt)
-
-def valid_pw(name, pw, h):
-    salt = h.split(',')[1]
-    hashVal = h.split(',')[0]
-    if h == make_pw_hash(name, pw, salt):
-        return True
-
 class DeleteUser(Handler):
     def get(self, email):
-        user = db.GqlQuery("SELECT * FROM User WHERE user_email = '%s'" % email)
+        user = db.GqlQuery("SELECT * FROM User WHERE email = '%s'" % email)
         for deleted_user in user:
             deleted_user.delete()
         time.sleep(1)
         self.redirect('/manage_user/')
 #Database models ************************
 class PresenterData(db.Model):
-    presenter_firstname = db.StringProperty(required = True, indexed = True)
-    presenter_lastname = db.StringProperty(required = True)
-    presenter_email = db.EmailProperty(required = True)
+    firstname = db.StringProperty(required = True, indexed = True)
+    lastname = db.StringProperty(required = True)
+    email = db.EmailProperty(required = True)
     username = db.StringProperty()
     session_name = db.StringProperty(required = False)
     session_room = db.StringProperty(indexed = True)
@@ -395,11 +386,11 @@ class PresenterData(db.Model):
 #Handler lookups *************************
 
 class User(db.Model):
-    user_firstname = db.StringProperty(required = True, indexed = True)
-    user_lastname = db.StringProperty(required = True)
+    firstname = db.StringProperty(required = True, indexed = True)
+    lastname = db.StringProperty(required = True)
     password = db.StringProperty(indexed = False, default = None)
-    user_email = db.EmailProperty(required = True)
-    user_type = db.StringProperty(required = True, default = "PRESENTER") #types GOD, SUPER_USER, USER, PRESENTER
+    email = db.EmailProperty(required = True)
+    user_type = db.StringProperty(required = True, default = "PRESENTER", choices = ('GOD', 'SUPER_USER', 'USER', 'PRESENTER')) #types GOD, SUPER_USER, USER, PRESENTER
 
 app = webapp.WSGIApplication(
           [('/', MainHandler),
