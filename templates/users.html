@@ -10,9 +10,9 @@
       <div>
       {% for super_user in users %}
       {% if super_user.user_type == 'SUPER_USER'  %}
-        <div class = "col-xs-3"><label>{{super_user.user_firstname}}</label></div>
-        <div class = "col-xs-3"><label>{{super_user.user_lastname}}</label></div>
-        <div class = "col-xs-3"><label>{{super_user.user_email}}</label></div>
+        <div class = "col-xs-3"><label>{{super_user.firstname}}</label></div>
+        <div class = "col-xs-3"><label>{{super_user.lastname}}</label></div>
+        <div class = "col-xs-3"><label>{{super_user.email}}</label></div>
           {% if super_user.user_firstname  %}
           <div class = "col-xs-3"><a href = "/delete_user/{{super_user.user_email}}">delete</a></div><br><hr>
           {% else %}
@@ -31,12 +31,12 @@
         <div class = "col-xs-3">
           <label>First Name</label>
           <input type = "textbox" name = "first_name" value = {{first_name}}>
-          <label style="color: red">{{error_user_name}}</label>
+          <label style="color: red">{{error_email}}</label>
         </div>
         <div class = "col-xs-3">
           <label>Last Name</label>
           <input type = "textbox" name = "last_name" value = {{last_name}}>
-          <label style="color: red">{{error_user_name}}</label>
+          <label style="color: red">{{error_email}}</label>
         </div>
         <div class = "col-xs-3">
           <label>Email</label>
@@ -65,9 +65,9 @@
 
       {% for user in users %}
       {% if user.user_type == 'USER'  %}
-      <div class = "col-xs-3"><label>{{user.user_firstname}}</label></div>
-      <div class = "col-xs-3"><label>{{user.user_lastname}}</label></div>
-      <div class = "col-xs-3"><label>{{user.user_email}}</label></div>
+      <div class = "col-xs-3"><label>{{user.firstname}}</label></div>
+      <div class = "col-xs-3"><label>{{user.lastname}}</label></div>
+      <div class = "col-xs-3"><label>{{user.email}}</label></div>
       {% if user.user_firstname  %}
       <div class = "col-xs-3"><a href = "/delete_user/{{user.user_email}}">delete</a></div><br><hr>
       {% else %}
