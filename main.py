@@ -18,19 +18,19 @@
 import os
 import urllib
 from dropbox import *
-from google.appengine.ext import blobstore
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import blobstore_handlers
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
-from google.appengine.ext import db
 
+from google.appengine.ext import blobstore, webapp, db
+from google.appengine.ext.webapp import blobstore_handlers, template
+from google.appengine.ext.webapp.util import run_wsgi_app
+import webapp2_extras.appengine.users as admin_users
+from webapp2_extras import securecookie, security, sessions, auth, jinja2
+import webapp2_extras.appengine.auth.models as auth_models
+
+import ndb
 import logging
-import jinja2
+#import jinja2
 import os
 import webapp2
-from webapp2_extras import securecookie
-from webapp2_extras import security
 import csv
 import time
 import re
@@ -38,78 +38,139 @@ import random
 import hashlib
 import hmac
 import string
-
 import secrets
+import forms
+
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
+#jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 db_client = client.DropboxClient(secrets.DB_TOKEN, "en_US", rest_client=None)
 POST_TO_DROPBOX = False
 SESSION_NAME_RE = re.compile(r"([\S\s]){3,100}")
 secure_cookies = securecookie.SecureCookieSerializer(secrets.SECURE_COOKIE)
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-PASS_RE = re.compile(r"^.{3,20}$")
-EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
 
-#TODO change sign_in.html to sign_up.html
-class Handler(webapp2.RequestHandler):
-    def write(self, *a, **kw):
-        self.response.out.write(*a, **kw)
-    def render_str(self, template, **params):
-        t = jinja_env.get_template(template)
-        return t.render(params)
-    def render(self, template, **kw):
-        self.write(self.render_str(template, **kw))
-#    def set_hash_cookie(self, name, val):
-#        cookie_name = str(name)
-#        cookie_value = str(make_secure_val(val))
-#        self.response.headers.add_header('Set-Cookie','%s=%s; Path=/' % (cookie_name, cookie_value))
-    def validate_super_user(self):
-        self.request.cookies.get('user_type', None)
-        #TODO Build helper method
-        return True
-    def validate_user(self):
-        #TODO Build helper method
-        self.request.cookies.get('user_type', None)
-        if self.validate_super_user(self.email): return True
-        return True
-    def validate_email(self, email):
-        if EMAIL_RE.match(email):
-            return email.lower()
+
+def jinja2_factory(app):
+    "True ninja method for attaching additional globals/filters to jinja"
+
+    j = jinja2.Jinja2(app)
+    j.environment.globals.update({'uri_for': webapp2.uri_for,})
+    return j
+def login_required(handler):
+    "Requires that a user be logged in to access the resource"
+    def check_login(self, *args, **kwargs):
+        if not self.user:
+            return self.redirect('/login')
         else:
-            return None
-    def validate_password_fmt(self, password):
-        if password == "":
-            return None
-        #TODO Enter RE for password verification
-        return password
+            return handler(self, *args, **kwargs)
+    return check_login
 
-class MainHandler(Handler):
-    def get(self):
-        self.render("index.html")
+def admin_required(handler):
 
-class Admin(Handler):
+    def check_login(self, *args, **kwargs):
+        if not self.admin:
+            return self.redirect('/')
+        else:
+            return handler(self, *args, **kwargs)
+    return check_login
+
+def super_admin_required(handler):
+    return admin_users.admin_required(handler)
+
+
+class AppUsers(auth_models.User):
+    email = ndb.StringProperty()
+
+class Admins(auth_models.User):
+    email = ndb.StringProperty()
+
+class UserAwareHandler(webapp2.RequestHandler):
+    @webapp2.cached_property
+    def session_store(self):
+        return sessions.get_store(request=self.request)
+
+    @webapp2.cached_property
+    def session(self):
+        return self.session_store.get_session(backend="datastore")
+
+    def dispatch(self):
+        try:
+            super(UserAwareHandler, self).dispatch()
+        finally:
+            self.session_store.save_sessions(self.response)
+
+    @webapp2.cached_property
+    def auth(self):
+        return auth.get_auth(request=self.request)
+
+    @webapp2.cached_property
+    def user(self):
+        user = self.auth.get_user_by_session()
+        
+        return user
+
+    @webapp2.cached_property
+    def admin(self):
+        user_dict = self.auth.get_user_by_session()
+        if user_dict:
+            user, timestamp = AppUsers.get_by_auth_token(user_dict['user_id'], user_dict['token'])
+            if user:
+                if str(user.auth_ids).find('admin') != -1:
+                    return user_dict
+
+    @webapp2.cached_property
+    def jinja2(self):
+        #return jinja2.get_jinja2(factory=jinja2_factory, app=self.app)
+        return jinja2.get_jinja2(factory=jinja2_factory, app=self.app)
+    def render_response(self, _template, **context):
+        ctx = {'user': self.user_model}
+        ctx.update(context)
+        rv = self.jinja2.render_template(_template, **ctx)
+        self.response.write(rv)
+
+    @webapp2.cached_property
+    def user_model(self):
+        user_model, timestamp = self.auth.store.user_model.get_by_auth_token(
+                self.user['user_id'],
+                self.user['token']) if self.user else (None, None)
+        return user_model
+    @webapp2.cached_property
+    def admin_model(self):
+        admin_model, timestamp = self.auth.store.admin_model.get_by_auth_token(
+                self.admin['user_id'],
+                self.admin['token']) if self.admin else (None, None)
+        return admin_model
+
+
+
+class MainHandler(UserAwareHandler):
     def get(self):
-        self.render("admin.html")
+        if self.user_model:
+            user = self.user_model.email
+        else:
+            user = None
+        self.render_response("index.html", user = user)
+
+class Admin(UserAwareHandler):
+    @admin_required
+    def get(self):
+        self.render_response("admin.html")
 
 
 #Handlers for presentation upload and blob storing
-class UploadPresentation(Handler):
-        def get(self, error = None):
-            error = error
-            upload_url = blobstore.create_upload_url('/upload')
-            query_results = db.GqlQuery("SELECT * FROM PresenterData")
-            self.render("upload_presentation.html",
-                error = error,
-                presenter_data=query_results,
-                upload_url = upload_url)
-            #for b in blobstore.BlobInfo.all():
+class UploadPresentation(UserAwareHandler):
+    @login_required
+    def get(self, error = None):
+        error = error
+        upload_url = blobstore.create_upload_url('/upload')
+        query_results = db.GqlQuery("SELECT * FROM PresenterData")
+        self.render("upload_presentation.html",
+            error = error,
+            presenter_data=query_results,
+            upload_url = upload_url)
 
-                #f = b.open()
-                #logging.warning(f)
-                #response = db_client.put_file('/test', f)
-            #    self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '">' + str(b.filename) + '</a>')
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+    @login_required
     def post(self):
         upload_files = self.get_uploads('file')
         presenter_name = self.request.get('presenter_name')
@@ -127,12 +188,14 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
             self.redirect('/')
 
 #Handlers for conference data
-class UploadConferenceData(Handler):
+class UploadConferenceData(UserAwareHandler):
+    @admin_required
     def get(self, error = ""):
         error = error.replace('-',' ')
         upload_url = blobstore.create_upload_url('/post_conference_data')
-        self.render("csv_uploads.html", error = error, upload_url = upload_url)
+        self.render_response("csv_uploads.html", error = error, upload_url = upload_url)
 class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
+    @admin_required
     def post(self):
         conference_csv_file = self.get_uploads('csv')
         f = conference_csv_file[0].open()
@@ -175,12 +238,15 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
         time.sleep(2)
         self.redirect('/view_conference_data')
 
-class ViewConferenceData(Handler):
+class ViewConferenceData(UserAwareHandler):
+    @admin_required
     def get(self):
         conference_data = db.GqlQuery("SELECT * FROM PresenterData")
-        self.render("view_conf_data.html",
+        self.render_response("view_conf_data.html",
                     conference_presenters = conference_data)
-class DeleteConferenceData(Handler):
+
+class DeleteConferenceData(UserAwareHandler):
+    @admin_required
     def get(self):
         conference_data = db.GqlQuery("SELECT * FROM PresenterData")
         for entry in conference_data:
@@ -192,6 +258,7 @@ class DeleteConferenceData(Handler):
 
 #Handler to upload presentations to DB
 class CopyBlobstoreToDropBox(blobstore_handlers.BlobstoreDownloadHandler):
+    @admin_required
     def get(self):
         query_result = db.GqlQuery("SELECT * FROM PresenterData WHERE blob_store_key !=  NULL")
         logging.error("query result %s"% query_result)
@@ -224,76 +291,135 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
         filename = entry.filename
     self.send_blob(blob_info, save_as = filename)
 
-class SignUp(Handler):
+class AdminSignupHanlder(UserAwareHandler):
+    "Serves up a signup form, creates new users"
     def get(self):
-        self.render("sign_in.html")
-
+        self.render_response("signup.html", form=forms.SignupForm(), errors={})
     def post(self):
-        email = self.request.get('email')
-
-        password_1 = self.request.get('password')
-        password_2 = self.request.get('verify')
-        if password_1 == password_2:
-            if self.validate_password(password_1) == False:
-                self.redirect('/register_user')
-        query_results = db.GqlQuery("SELECT * FROM User WHERE email = '%s'" % email)
-        for entry in query_results:
-            entry.password = security.generate_password_hash(password_1, method='sha1', length=22, pepper=None)
-            entry.put()
-        self.redirect("/")
-    def validate_password(self, password_1):
-        if PASS_RE.match(password_1) != None:
-            return True
-        else:
-            return False
-class Login(Handler):
-    def get(self):
-        self.render("login.html", username = "", password = "")
-    def post(self):
-        email = self.validate_email(self.request.get('email'))
-        password = self.validate_password_fmt(self.request.get('password'))
-        #self.render("index.html", error = "CHEESE")
-        if email == None:
-            self.render("login.html", error_email = "Please enter your email address",
-                                      error_password = "")
-        elif password == None:
-            self.render("login.html", error_email = "",
-                                      error_password = "Please enter your password")
-        elif email and password:
-            query_result = db.GqlQuery("SELECT * FROM User WHERE email = '%s'" % email)
-            if query_result:
-                for user in query_result:
-                    if user.password == None:
-                        self.render('sign_in.html', error = "Please register your account to continue")
-                    elif user.email and user.password:
-                        if security.check_password_hash(password, user.password, pepper=None):
-                            serialized_value = secure_cookies.serialize(user.email, user.user_type)
-                            self.response.set_cookie('user_type', serialized_value, path='/')
-                            #TODO enable sessions
-                            self.redirect('/')
-                        else:
-                            self.write
-                            self.render("login.html", error = "Incorrect Password, please try again")
-                    else:
-                        self.render("login.html", error = "Incorect username or password, please try again")
+        form = forms.SignupForm(self.request.POST)
+        error = None
+        if form.validate():
+            error = None
+            success, info = self.auth.store.user_model.create_user("admin:" + form.email.data,
+                                               unique_properties=['email'],
+                                                email= form.email.data,
+                                          password_raw= form.password.data)
+            logging.info("The result of attempting to put the admin into the admins DB is %s" %info)
+            if success:
+                time.sleep(.5)
+                try:
+                    user = self.auth.get_user_by_password("admin:"+form.email.data,
+                                                   form.password.data)
+                    logging.info("Admin user data after creation %s" % user)
+                except auth.InvalidAuthIdError:
+                    self.redirect('/login')
+                else:
+                    self.redirect('/')
             else:
-                self.render("index.html", error = "No user account")
+                error = {'email':"That email is already in use."}
+                #if 'email'\in self.user else "Something went horribly wrong."
+                self.render_response('signup.html', form=forms.SignupForm(), errors=error)
         else:
-            self.render("login.html", error_email = "Invalid Entry", error_password = "Invalid Entry")
+            error= "Form Invalid"
+            self.render_response('signup.html', form=forms.SignupForm(), errors=form.errors)
+class SignupHanlder(UserAwareHandler):
+    "Serves up a signup form, creates new users"
+    def get(self):
+        self.render_response("signup.html", form=forms.SignupForm(), errors={})
+    def post(self):
+        form = forms.SignupForm(self.request.POST)
+        error = None
+        if form.validate():
+            error = None
+            auth_id = "user:" + form.email.data
+            logging.info(auth_id)
+
+            success, info = self.auth.store.user_model.create_user("user:" + form.email.data,
+                                               unique_properties=['email'],
+                                                email= form.email.data,
+                                          password_raw= form.password.data)
+
+            logging.info(success)
+
+            if success:
+                time.sleep(.5)
+                try:
+                    user = self.auth.get_user_by_password("user:"+form.email.data,
+                                           form.password.data)
+                    logging.info("Admin user data after creation %s" % user)
+                except auth.InvalidAuthIdError:
+                    self.redirect('/login')
+                else:
+                    self.redirect('/')
+
+            else:
+                error = {'email':"That email is already in use."}
+                #if 'email'\in self.user else "Something went horribly wrong."
+                self.render_response('signup.html', form=forms.SignupForm(), errors=error)
+
+        else:
+            error= "Form Invalid"
+            self.render_response('signup.html', form=forms.SignupForm(), errors=form.errors)
+
+class LoginHandler(UserAwareHandler):
+    def get(self):
+        self.render_response("login2.html", form=forms.LoginForm())
+
+    def post(self):
+        form = forms.LoginForm(self.request.POST)
+        error = None
+        if form.validate():
+            try:
+                self.auth.get_user_by_password(
+                    "own:"+form.email.data,
+                    form.password.data)
+                return self.redirect('/')
+            except (auth.InvalidAuthIdError, auth.InvalidPasswordError):
+                error = "Invalid Email / Password"
+                self.render_response('login.html',
+                                form=form,
+                                error=error)
+class AdminLoginHandler(UserAwareHandler):
+    def get(self):
+        self.render_response("login2.html", form=forms.LoginForm())
+
+    def post(self):
+        form = forms.LoginForm(self.request.POST)
+        error = None
+        if form.validate():
+            try:
+                self.auth.get_user_by_password(
+                    "admin:"+form.email.data,
+                    form.password.data)
+                return self.redirect('/')
+            except (auth.InvalidAuthIdError, auth.InvalidPasswordError):
+                error = "Invalid Email / Password"
+                self.render_response('login.html',
+                                form=form,
+                                error=error)
+
+class LogoutHandler(UserAwareHandler):
+    """Destroy the user session and return them to the login screen."""
+    @login_required
+    def get(self):
+        self.auth.unset_session()
+        self.redirect('/')
 
 
-class DiplayAllPresentersAndPresentations(Handler):
+class DiplayAllPresentersAndPresentations(UserAwareHandler):
+    @admin_required
     def get(self):
         if self.validate_user():
             db_entries = db.GqlQuery("SELECT * FROM PresenterData")
-            self.render("view_all_data.html",
+            self.render_response("view_all_data.html",
                     db_entries = db_entries)
 
-class ManageUsers(Handler):
+class ManageUsers(UserAwareHandler):
+    @admin_required
     def get(self, error = ""):
         if self.validate_super_user():
             users = db.GqlQuery("SELECT * FROM User WHERE user_type != 'PRESENTER'")
-            self.render("users.html", users = users, error = error)
+            self.render_response("users.html", users = users, error = error)
         else: self.redirect('/')
     def post(self, error):
         #TODO: Add handling for bad entry.
@@ -311,9 +437,10 @@ class ManageUsers(Handler):
             time.sleep(2)
         self.redirect('/manage_user/')
 
-class AddPresenter(Handler):
+class AddPresenter(UserAwareHandler):
+    @admin_required
     def get(self):
-        self.render("add_presenter.html")
+        self.render_response("add_presenter.html")
     def post(self):
         #TODO: Add handling for bad entry.
         firstname = validate_name(self.request.get('first_name'))
@@ -332,43 +459,23 @@ class AddPresenter(Handler):
             time.sleep(2)
             self.redirect('/view_conference_data')
         else: self.redirect('/add_presenter')
-#TODO clean up write forms
+        #TODO clean up write forms
     def write_form(self, first_name = "", last_name = "", email = "", session_name = "", session_room = "",
                     error_user_name="", error_email="", error_session_name=""):
         self.render("add_presenter.html", first_name = first_name, last_name = last_name,
                     email = email, session_name = session_name, session_room = session_room,
                     error_user_name = error_user_name, error_email = error_email,
                     error_session_name = error_session_name)
-#Data validation helper functions *****************
-def validate_email(email):
-    if EMAIL_RE.match(email):
-        return email
-    else:
-        return None
-def confirmed_presenter(email):
-    query_results = db.GqlQuery("SELECT * FROM PresenterData WHERE email = '%s'" % email)
-    for entry in query_results:
-        return True
-    return False
-def validate_entry(name):
-    if SESSION_NAME_RE.match(name) != None:
-        return name
-    else:
-        return False
-def validate_name(name):
-    if USER_RE.match(name):
-        return name
-    else:
-        return None
 
-class DeleteUser(Handler):
+class DeleteUser(UserAwareHandler):
+    @admin_required
     def get(self, email):
         user = db.GqlQuery("SELECT * FROM User WHERE email = '%s'" % email)
         for deleted_user in user:
             deleted_user.delete()
         time.sleep(1)
         self.redirect('/manage_user/')
-#Database models ************************
+
 class PresenterData(db.Model):
     firstname = db.StringProperty(required = True, indexed = True)
     lastname = db.StringProperty(required = True)
@@ -383,7 +490,6 @@ class PresenterData(db.Model):
     presentation_db_path = db.CategoryProperty(indexed = False, default = None)
     presentation_db_size = db.StringProperty(default = None)
     user_type = db.StringProperty(required = True, default = "PRESENTER")
-#Handler lookups *************************
 
 class User(db.Model):
     firstname = db.StringProperty(required = True, indexed = True)
@@ -391,9 +497,20 @@ class User(db.Model):
     password = db.StringProperty(indexed = False, default = None)
     email = db.EmailProperty(required = True)
     user_type = db.StringProperty(required = True, default = "PRESENTER", choices = ('GOD', 'SUPER_USER', 'USER', 'PRESENTER')) #types GOD, SUPER_USER, USER, PRESENTER
+config = {}
+config['webapp2_extras.sessions'] = {
+    'secret_key': 'omg-this-key-is-secret',
+}
+config['webapp2_extras.auth'] = {
+    'user_model': AppUsers
+
+}
 
 app = webapp.WSGIApplication(
           [('/', MainHandler),
+           ('/signup', SignupHanlder),
+           ('/login', LoginHandler),
+           ('/logout', LogoutHandler),
            ('/admin', Admin),
            ('/upload_presentation', UploadPresentation),
            ('/upload', UploadHandler),
@@ -404,12 +521,11 @@ app = webapp.WSGIApplication(
            ('/view_conference_data', ViewConferenceData),
            ('/delete_conference_data', DeleteConferenceData),
            ('/post_to_dropbox', CopyBlobstoreToDropBox),
-           ('/register_user', SignUp),
            ('/add_presenter', AddPresenter),
            ('/serve/([^/]+)?', ServeHandler),
            ('/display_all', DiplayAllPresentersAndPresentations),
            ('/manage_user/([a-z_A-Z-]?)', ManageUsers),
            ('/delete_user/([\S]+@[\S]+\.[\S]{3})', DeleteUser),
-           ('/login', Login)
+           ('/create_admin', AdminSignupHanlder)
 
-          ], debug=True)
+          ], debug=True, config=config)
