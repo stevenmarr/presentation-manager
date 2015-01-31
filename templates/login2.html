@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="POST" action="/login">
+    <div>{{ form.email.label }}: {{ form.email(class="css_class") }}</div>
+    <div>{{ form.password.label }}: {{ form.password() }}</div>
+    
+    <input type = "submit">
+</form>
+{% endblock %}

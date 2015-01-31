@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for error in errors %}
+{{ errors[error] }}<br>
+{% endfor %}
+
+<form method="POST"  >
+    <div>{{ form.email.label }}: {{ form.email(class="css_class") }}</div>
+    <div>{{ form.password.label }}: {{ form.password() }}</div>
+    <div>{{ form.password_confirm.label }}: {{ form.password_confirm() }}</div>
+    <input type = "submit">
+</form>
+{% endblock %}
