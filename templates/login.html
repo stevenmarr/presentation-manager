@@ -1,24 +1,24 @@
+{% extends "main.html" %}
 
-{% extends "head.html" %}
-{% block content %}
-        <h1>Login</h1>
-    <div>
-        <form method = "post">
-          <div class = "col-xs-4">
-            <label>Email
-              <input type = "text" name = "email" value = {{email}}><label style="color: red">{{error_email}}</label>
-            </label>
-          </div>
-          <div class = "col-xs-4">
-            <label>Password
-              <input type = "password" name = "password" value = {{password_1}}><label style="color: red">{{error_password}}</label>
-            </label>
-          </div>
-          <div class = "col-xs-4">
-            <input type = "submit">
-          </div>
-        </form>
-    </div>
-    </body>
-</html>
+{% block maincontent %}
+
+<h1>Login</h1>
+
+{% if failed %}
+
+<strong>Login failed!</strong> Check your credentials and try again.
+
+{% endif %}
+
+<form class="form" action= "/login" method="POST">
+  <label for="username">Email</label>
+  <input type="text" value="{{ username }}" name="username"/>
+  <label for="password">Password</label>
+  <input type="password" name="password"/>
+  <button type="submit" class="btn">Login</button>
+</form>
+
+<a href="/forgot">Forgot password</a>
+
+
 {% endblock %}

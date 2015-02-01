@@ -1,24 +1,66 @@
 <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+      <title>{% block title %}Presentation Manager{% endblock %}</title>
+        <script language="JavaScript" type="text/javascript">
+          <!-- Copyright 2005, Sandeep Gangadharan -->
+          <!-- For more free scripts go to http://www.sivamdesign.com/scripts/ -->
+          <!--
+          if (document.getElementById) {
+            document.writeln('<style type="text/css"><!--')
+            document.writeln('.texter {display:none} @media print {.texter {display:block;}}')
+            document.writeln('//--></style>') }
 
-<html>
-    <head>
-      <link href="/css/bootstrap.min.css" rel="stylesheet">
-      <link href="/css/main.css" rel="stylesheet">
-      <title>Presentation Manager</title>
-      <script language="JavaScript" type="text/javascript">
-      <!-- Copyright 2005, Sandeep Gangadharan -->
-      <!-- For more free scripts go to http://www.sivamdesign.com/scripts/ -->
-      <!--
-      if (document.getElementById) {
-        document.writeln('<style type="text/css"><!--')
-        document.writeln('.texter {display:none} @media print {.texter {display:block;}}')
-        document.writeln('//--></style>') }
-
-        function openClose(theID) {
-          if (document.getElementById(theID).style.display == "block") { document.getElementById(theID).style.display = "none" }
-          else { document.getElementById(theID).style.display = "block" } }
+            function openClose(theID) {
+              if (document.getElementById(theID).style.display == "block") { document.getElementById(theID).style.display = "none" }
+              else { document.getElementById(theID).style.display = "block" } }
           // -->
-          </script>
-	  </head>
-    {% block content %}
+        </script>
+        <link href="/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/css/main.css" rel="stylesheet">
+        <style>
+          input {
+          display: block;
+          }
+        </style>
+  </head>
+
+<body>
+
+  <div class="content">
+    {% block maincontent %}
+
     {% endblock %}
+  </div>
+
+  <div>
+    <footer>
+      <hr/>
+      <p>
+        {% if not user %}
+        <a href="/login">Login</a>
+        {% else %}
+        Logged in as <span style="background-color: OldLace">{{ user.name }}</span> | <a href="/logout">Logout</a>
+        {% endif %}
+        |
+        <a href="/">Home</a>
+        |
+        <a href="/signup">New user</a>
+        |
+        <a href="/">Home</a>
+        |
+        <a href="/">Admin</a> (admin login required)
+        |
+        <a href="/admin">Admin</a> (admin login required)
+
+        <!--<a href="http://blog.abahgat.com/2013/01/07/user-authentication-with-webapp2-on-google-app-engine/">Tutorial</a>
+        |
+        <a href="http://github.com/abahgat/webapp2-user-accounts">Source code</a>
+      </p>
+      <p>
+      Got questions? <a href="http://blog.abahgat.com/about">Get in touch</a>.
+      <small>And if you want to <strong>donate</strong> a little something, <a href="http://abahgat.github.io/webapp2-user-accounts#donate">here</a> a few options.</small>-->
+    </p>
+  </footer>
+</div>

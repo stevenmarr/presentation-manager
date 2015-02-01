@@ -1,14 +1,18 @@
-{% extends "head.html" %}
+{% extends "main.html" %}
 {% block content %}
     <h1>
         Add a New Presenter
     </h1>
     <div>
         <form method = "post">
-          <div class = "<!-- -->"><label>First Name
-            <br /><input type = "textarea" rows="4" cols="100"  name = "first_name" value = {{first_name}}><label style="color: red">{{error_user_name}}</label></div>
+          <div class = "<!-- -->">
+            <label>First Name</label>
             <br />
-            <div class = "<!-- -->"><label>Last Name
+              <input type = "textarea" rows="4" cols="100"  name = "first_name" value = {{first_name}}>
+                <label style="color: red">{{error_user_name}}</label>
+          </div>
+            <br />
+          <div class = "<!-- -->"><label>Last Name
               <br /><input type = "textarea" rows="4" cols="100" name = "last_name" value = {{last_name}}><label style="color: red">{{error_user_name}}</label></div>
               <br />
               <div class = "<!-- -->"><label>Email (required)
