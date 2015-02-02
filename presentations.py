@@ -10,8 +10,9 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import webapp2_extras.appengine.users as admin_users
 from webapp2_extras import securecookie, security, sessions, auth, jinja2
 import webapp2_extras.appengine.auth.models as auth_models
-
-from main import BaseHandler, user_required, admin_required, config
+from webapp2_extras.appengine.auth.models import Unique
+from main import BaseHandler, user_required, admin_required, config, jinja2_factory, validate
+from models import User
 import logging
 #import jinja2
 import os
@@ -33,11 +34,9 @@ SESSION_NAME_RE = re.compile(r"([\S\s]){3,100}")
 
 
 class Admin(BaseHandler):
-    @user_required
+    @admin_required
     def get(self):
         self.render_template('admin.html')
-        #self.render_response("admin.html")
-
 
 #Handlers for presentation upload and blob storing
 class UploadPresentation(BaseHandler):
@@ -70,63 +69,70 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
             self.redirect('/')
 
 #Handlers for conference data
-class UploadConferenceData(BaseHandler):
+class UploadConferenceData(blobstore_handlers.BlobstoreUploadHandler, BaseHandler):
     @admin_required
     def get(self, error = ""):
         error = error.replace('-',' ')
         upload_url = blobstore.create_upload_url('/post_conference_data')
+        logging.info("Upload URL in Upload conf data is %s" % upload_url)
         self.render_response("csv_uploads.html", error = error, upload_url = upload_url)
-class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler):
+class UploadHandlerConfData(BaseHandler, blobstore_handlers.BlobstoreUploadHandler):
     @admin_required
     def post(self):
         conference_csv_file = self.get_uploads('csv')
         f = conference_csv_file[0].open()
         csv_f = csv.reader(f)
+        logging.info("CSV files is %s" % csv_f)
         for row in csv_f:
+            logging.info("CSV row is %s" % row)
             #TODO error handling for uncompatable CSV file
-            firstname = validate_name(row[0])
-            if firstname == False:
-                logging.error("CSV Import error First Name")
-                logging.error(row[0])
-            lastname = validate_name(row[1])
-            if lastname == False:
-                logging.error("CSV Import error Last Name")
-                logging.error(row[1])
-            email = validate_email(row[2])
+            firstname = validate(row[0])
+            #if firstname == False:
+            #    logging.error("CSV Import error First Name")
+            #    logging.error(row[0])
+            lastname = validate(row[1])
+            #if lastname == False:
+            #    logging.error("CSV Import error Last Name")
+            #    logging.error(row[1])
+            email = validate(row[2])
             if email == False:
                 logging.error("CSV Import error Email")
                 logging.error(row[2])
-            session_name = validate_entry(row[3])
+            session_name = validate(row[3])
             if session_name == False:
                 logging.error("CSV Import error Session Name")
                 logging.error(row[3])
-            session_room = validate_entry(row[4])
+            session_room = validate(row[4])
             if session_room == False:
                 logging.error("CSV Import error Session Room")
                 logging.error(row[4])
-            if (firstname and lastname and email and session_name and session_room):
-                entry = PresenterData(firstname = firstname,
+            #if (firstname and lastname and email and session_name and session_room):
+
+            entry = models.PresenterData(firstname = firstname,
                                   lastname = lastname,
                                   email = email,
                                   session_name = session_name,
                                   session_room = session_room)
-                entry.put()
-                entry = User(firstname = firstname, lastname = lastname,
-                            email = email, user_type = 'PRESENTER')
-                entry.put()
-            else:
-                self.redirect('/upload_conference_data/Error-CSV-File-is-an-incorrect-format-or-contains-duplicate-entries-see-readme-for-formatting')
+            logging.info("entry processed")
+            entry.put()
+
+            #user = models.User()
+            #    unique_properties = ['email_address']
+            #    user.create_user(user_id,
+            #      unique_properties=None,
+            #      email_address=user_id, name='Test', user_type = 'user',
+            #      last_name='Test', verified=False)
+            #else:
+            #    self.redirect('/upload_conference_data/Error-CSV-File-is-an-incorrect-format-or-contains-duplicate-entries-see-readme-for-formatting')
         f.close()
         time.sleep(2)
-        self.redirect('/view_conference_data')
+        self.redirect('/admin/view_conference_data')
 
 class ViewConferenceData(BaseHandler):
     @admin_required
     def get(self):
         conference_data = db.GqlQuery("SELECT * FROM PresenterData")
-        params ={}
-        params['conference_presenters'] = conference_data
-        self.render_template('view_conf_data.html', params)
+        self.render_response('view_conf_data.html', conference_presenters = conference_data)
 
 class DeleteConferenceData(BaseHandler):
     @admin_required
@@ -184,72 +190,48 @@ class DiplayAllPresentersAndPresentations(BaseHandler):
         db_entries = db.GqlQuery("SELECT * FROM PresenterData")
         self.render_response("view_all_data.html",db_entries = db_entries)
 
-class ManageUsers(BaseHandler):
-    @admin_required
-    def get(self, error = ""):
-        if self.validate_super_user():
-            users = db.GqlQuery("SELECT * FROM User WHERE user_type != 'PRESENTER'")
-            self.render_response("users.html", users = users, error = error)
-        else: self.redirect('/')
-    def post(self, error):
-        #TODO: Add handling for bad entry.
-        firstname = validate_name(self.request.get('first_name'))
-        lastname = validate_name(self.request.get('last_name'))
-        email = self.validate_email(self.request.get('email'))
-        user_type = self.request.get('user_type')
-        self.write(email)
-        if firstname and lastname and email:
-            entry = User(firstname = firstname,
-                        lastname = lastname,
-                        email = email,
-                        user_type = user_type.upper())
-            entry.put()
-            time.sleep(2)
-        self.redirect('/manage_user/')
 
-class AddPresenter(BaseHandler):
+class ManageUserAccountsHandler(BaseHandler):
     @admin_required
     def get(self):
-        self.render_response("add_presenter.html")
-    def post(self):
-        #TODO: Add handling for bad entry.
-        firstname = validate_name(self.request.get('first_name'))
-        lastname = validate_name(self.request.get('last_name'))
-        email = validate_email(self.request.get('email'))
-        session_name = validate_entry(self.request.get('session_name'))
-        session_room = validate_entry(self.request.get('session_room'))
-        if firstname and lastname and email and session_name:
+        users = User.query(User.account_type == 'user')
+        self.render_response("manage_users.html", basic_users = users)
 
-            entry = PresenterData(firstname = firstname,
-                                                lastname = lastname,
-                                                email = email,
-                                                session_name = str(session_name),
-                                                session_room = session_room)
-            entry.put()
-            time.sleep(2)
-            self.redirect('/view_conference_data')
-        else: self.redirect('/add_presenter')
-        #TODO clean up write forms
-    def write_form(self, first_name = "", last_name = "", email = "", session_name = "", session_room = "",
-                    error_user_name="", error_email="", error_session_name=""):
-        self.render("add_presenter.html", first_name = first_name, last_name = last_name,
-                    email = email, session_name = session_name, session_room = session_room,
-                    error_user_name = error_user_name, error_email = error_email,
-                    error_session_name = error_session_name)
-
-class DeleteUser(BaseHandler):
+class AddUserAccountHandler(BaseHandler):
     @admin_required
-    def get(self, email):
-        user = db.GqlQuery("SELECT * FROM User WHERE email = '%s'" % email)
-        for deleted_user in user:
-            deleted_user.delete()
-        time.sleep(1)
-        self.redirect('/manage_user/')
+    def post(self):
+        email = self.request.get('email')
+        name = self.request.get('name')
+        last_name = self.request.get('lastname')
+        unique_properties = ['email_address']
+        session, user = self.user_model.create_user(email,
+                                                    unique_properties,
+                                                    email_address=email,
+                                                    account_type = 'user',
+                                                    name=name,
+                                                    last_name=last_name,
+                                                    verified=False)
+        time.sleep(.25)
+        if not session:
+            self.display_message('Unable to create user for email %s because of \
+                                  duplicate keys %s' % (user_name, user))
+        self.redirect('/admin/manage_users')
 
-app = webapp.WSGIApplication(
+class DeleteUserAccountHandler(BaseHandler):
+    @admin_required
+    def post(self):
+        user_id = self.request.get('user_id')
+        user = User.get_by_auth_id(user_id)
+        if user:
+            Unique.delete_multi( map(lambda s: 'User.auth_id:' + s, user.auth_ids) )
+            user.key.delete()
+            time.sleep(.25)
+        self.redirect('/admin/manage_users')
+
+app = webapp2.WSGIApplication(
           [webapp2.Route('/admin', Admin),
            webapp2.Route('/upload_presentation', UploadPresentation),
-           webapp2.Route('/upload', UploadHandler),
+           webapp2.Route('/_ah/upload', UploadHandler),
            webapp2.Route('/serve/([^/]+)?', ServeHandler),
            webapp2.Route('/post_conference_data', UploadHandlerConfData),
            webapp2.Route('/admin/upload_conference_data/', UploadConferenceData),
@@ -257,9 +239,9 @@ app = webapp.WSGIApplication(
            webapp2.Route('/admin/view_conference_data', ViewConferenceData),
            webapp2.Route('/admin/delete_conference_data', DeleteConferenceData),
            webapp2.Route('/post_to_dropbox', CopyBlobstoreToDropBox),
-           webapp2.Route('/admin/add_presenter', AddPresenter),
            webapp2.Route('/serve/([^/]+)?', ServeHandler),
            webapp2.Route('/admin/display_all', DiplayAllPresentersAndPresentations),
-           webapp2.Route('/admin/manage_user/([a-z_A-Z-]?)', ManageUsers),
-           webapp2.Route('/delete_user/([\S]+@[\S]+\.[\S]{3})', DeleteUser)
+           webapp2.Route('/admin/manage_users', ManageUserAccountsHandler),
+           webapp2.Route('/admin/add_user_account', AddUserAccountHandler),
+           webapp2.Route('/admin/delete_user_account', DeleteUserAccountHandler)
 ], debug=True, config=config)

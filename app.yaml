@@ -9,9 +9,22 @@ handlers:
 - url: /css
   static_dir: statics/css
 
+- url: /super_admin.*
+  script: super_admin_handlers.app
+  secure: always
+
 - url: /admin.*
   script: presentations.app
   secure: always
+
+- url: /post_conference_data
+  script: presentations.app
+  secure: always
+
+- url: /_ah.*
+  script: presentations.app
+  secure: always
+
 - url: .*
   script: main.app
 

@@ -6,10 +6,10 @@ from google.appengine.ext import ndb
 import logging
 import os.path
 import webapp2
-
+import models
 from webapp2_extras import auth
-from webapp2_extras import sessions
-
+from webapp2_extras import sessions, jinja2
+from webapp2_extras import users
 from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
 
@@ -23,30 +23,23 @@ def send_email(email, subject, msg):
         message.send()
         return True
     else:
-        logging.error("Problem sending email")
+
         return None
 
 def user_required(handler):
   """
     Decorator that checks if there's a user associated with the current session.
     Will also fail if there's no session present.
-  """
+    """
   def check_login(self, *args, **kwargs):
     auth = self.auth
-    #logging.info("Auth is %s" % auth.__dict__)
-    #logging.info("auth.get_user_by_session() %s" %auth.get_user_by_session()['user_type'])
     if auth.get_user_by_session():
-        if auth.get_user_by_session()['user_type'] == 'user':
+        if auth.get_user_by_session()['account_type'] == 'user':
             return handler(self, *args, **kwargs)
         else: self.redirect('/login')
     else: self.redirect('/login')
-        #self.redirect('/login')#(self.uri_for('login'), abort=True)
-    #if auth.get_user_by_session()['user_type'] == 'user':
-    #    return handler(self, *args, **kwargs)
-#    else: self.redirect('/login')
-
-
   return check_login
+
 def admin_required(handler):
   """
     Decorator that checks if there's a user associated with the current session.
@@ -54,19 +47,41 @@ def admin_required(handler):
   """
   def check_login(self, *args, **kwargs):
     auth = self.auth
-    if not auth.get_user_by_session():
-      self.redirect(self.uri_for('login'), abort=True)
-    else:
-      return handler(self, *args, **kwargs)
-
+    if auth.get_user_by_session():
+        logging.info("Account type is %s" % auth.get_user_by_session()['account_type'] )
+        if auth.get_user_by_session()['account_type'] == 'admin':
+            return handler(self, *args, **kwargs)
+        else: self.redirect('/login')
+    else: self.redirect('/login')
   return check_login
+
+def super_admin_required(handler):
+    if users.admin_required(handler):
+        return handler
+    else:
+        self.redirect('/')
+
+def jinja2_factory(app):
+    "True ninja method for attaching additional globals/filters to jinja"
+
+    j = jinja2.Jinja2(app)
+    j.environment.globals.update({
+        'uri_for': webapp2.uri_for,
+    })
+    return j
+
+def validate(name, type = 'string'):
+    return name
+
+
+
 
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
   def auth(self):
     """Shortcut to access the auth instance as a property."""
-    logging.info("Auth is %s" % dir(auth.get_auth()))
+
     return auth.get_auth()
 
   @webapp2.cached_property
@@ -111,6 +126,18 @@ class BaseHandler(webapp2.RequestHandler):
     path = os.path.join(os.path.dirname(__file__), 'templates', view_filename)
     self.response.out.write(template.render(path, params))
 
+  @webapp2.cached_property
+  def jinja2(self):
+    return jinja2.get_jinja2(factory=jinja2_factory, app=self.app)
+
+  def render_response(self, _template, **context):
+    ctx = {'user': self.user_info}
+    ctx.update(context)
+    rv = self.jinja2.render_template(_template, **ctx)
+    self.response.write(rv)
+
+
+
   def display_message(self, message):
     """Utility function to display a template with a simple message."""
     params = {
@@ -134,39 +161,47 @@ class MainHandler(BaseHandler):
   def get(self):
     self.render_template('home.html')
 
-class SignupHandler(BaseHandler):
+def add_users(user_id, account_type):
+    user = models.User()
+    unique_properties = ['email']
+    session, user = user.create_user(user_id,
+                                     unique_properties,
+                                     email = user_id,
+                                     account_type = account_type,
+                                     name='Test',
+                                     last_name='Test',
+                                     verified=False)
+    return session, user
+
+class AccountActivateHandler(BaseHandler):
   def get(self):
-    self.render_template('signup.html')
+    self.render_template('activate.html')
 
   def post(self):
     user_name = self.request.get('email')
     email = self.request.get('email')
     name = self.request.get('name')
     password = self.request.get('password')
+    password_verify = self.request.get('verify')
+    if password != password_verify:
+        self.display_message('Passwords do not match, please activate again')
     last_name = self.request.get('lastname')
 
-    unique_properties = ['email_address']
-    user_data = self.user_model.create_user(user_name,
-      unique_properties,
-      email_address=email, name=name, user_type = 'user', password_raw=password,
-      last_name=last_name, verified=False)
-    if not user_data[0]: #user_data is a tuple
-      self.display_message('Unable to create user for email %s because of \
-        duplicate keys %s' % (user_name, user_data[1]))
-      return
+    user = self.user_model.get_by_auth_id(user_name)
+    #logging.info('User is %s' % user.email_address)
+    if user:
+        user.set_password(password)
+        user_id = user.get_id()
+        token = self.user_model.create_signup_token(user_id)
+        verification_url = self.uri_for('verification', type='v', user_id=user_id,
+                                        signup_token=token, _full=True)
+        msg = 'Send an email to user in order to verify their address. \
+               They will be able to do so by visiting <a href="{url}">{url}</a>'
 
-    user = user_data[1]
-    user_id = user.get_id()
+        self.display_message(msg.format(url=verification_url))
+    else:
+        self.diplay_message('That email address does not match an entry in our records')
 
-    token = self.user_model.create_signup_token(user_id)
-
-    verification_url = self.uri_for('verification', type='v', user_id=user_id,
-      signup_token=token, _full=True)
-
-    msg = 'Send an email to user in order to verify their address. \
-          They will be able to do so by visiting <a href="{url}">{url}</a>'
-
-    self.display_message(msg.format(url=verification_url))
 
 class ForgotPasswordHandler(BaseHandler):
   def get(self):
@@ -177,7 +212,7 @@ class ForgotPasswordHandler(BaseHandler):
 
     user = self.user_model.get_by_auth_id(username)
     if not user:
-      logging.info('Could not find any user entry for username %s', username)
+
       self._serve_page(not_found=True)
       return
 
@@ -216,8 +251,7 @@ class VerificationHandler(BaseHandler):
       'signup')
 
     if not user:
-      logging.info('Could not find any user with id "%s" signup token "%s"',
-        user_id, signup_token)
+
       self.abort(404)
 
     # store user data in the session
@@ -266,16 +300,21 @@ class SetPasswordHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
   def get(self):
+
     self._serve_page()
 
   def post(self):
     username = self.request.get('username')
-    logging.info('Username from login.html %s' % username)
+    user = self.user_model.get_by_auth_id(username)
+    if not user.password:
+        self.redirect('/activate')
+        return
     password = self.request.get('password')
+
     try:
       u = self.auth.get_user_by_password(username, password, remember=True,
         save_session=True)
-      logging.info("The Value for U is %s" % u)
+
       self.redirect(self.uri_for('home'))
     except (InvalidAuthIdError, InvalidPasswordError) as e:
       logging.info('Login failed for user %s because of %s', username, type(e))
@@ -302,7 +341,7 @@ class AuthenticatedHandler(BaseHandler):
 config = {
   'webapp2_extras.auth': {
     'user_model': 'models.User',
-    'user_attributes': ['name', 'user_type']
+    'user_attributes': ['name', 'account_type']
   },
   'webapp2_extras.sessions': {
     'secret_key': 'YOUR_SECRET_KEY'
@@ -311,7 +350,8 @@ config = {
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/', MainHandler, name='home'),
-    webapp2.Route('/signup', SignupHandler),
+    webapp2.Route('/activate', AccountActivateHandler, name='activate'),
+    webapp2.Route('/signup', AccountActivateHandler, name='activate'),
     webapp2.Route('/<type:v|p>/<user_id:\d+>-<signup_token:.+>',
       handler=VerificationHandler, name='verification'),
     webapp2.Route('/password', SetPasswordHandler),

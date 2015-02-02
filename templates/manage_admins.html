@@ -1,0 +1,36 @@
+{% extends "main.html" %}
+{% block maincontent %}
+    <h1>
+        Manage Admin Accounts
+    </h1>
+      <div>
+      <h3>Admin Accounts</h3>
+
+        <div>
+          {% for a_user in users %}
+            <label>{{a_user.name}} | {{a_user.last_name}}  |  {{a_user.email_address}}  |  {{a_user.verified}}  |   {{a_user.account_type}}</label>
+                <form action="/super_admin/delete_user_account" method="POST">
+                  <input type="hidden" name="user_id" value={{a_user.email_address}}>
+                  <input type="submit" value="Delete Account" />
+                </form>
+                 <br>
+          {% endfor %}
+        </div>
+      </div>
+      <hr>
+      <div>
+      <h3>Add Admin Account</h3>
+        <div>
+        <form action="/super_admin/add_user_account" method="POST">
+          <label for="email">Email address</label>
+          <input type="text" name="email" />
+          <label for="name">Name</label>
+          <input type="text" name="name" />
+          <label for="lastname">Last Name</label>
+          <input type="text" name="lastname" />
+          <input type="submit" value="Add Account" />
+        </form>
+        </div>
+      </div>
+
+    {% endblock %}

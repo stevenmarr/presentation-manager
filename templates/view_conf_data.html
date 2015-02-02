@@ -7,12 +7,12 @@
 	<div class = "col-xs-2"><label class = "title">First Name</label>		</div>
 	<div class = "col-xs-2"><label class = "title">Last Name</label>		</div>
 	<div class = "col-xs-6"><label class = "title">Session Name</label>	</div>
-	<div class = "col-xs-2"><label class = "title">Room</label>					</div>
+	<div class = "col-xs-2"><label class = "title">Room</label>					</div><br>
 				{% for conference_presenter in conference_presenters %}
-	<div class = "col-xs-2"><label>{{conference_presenter.presenter_firstname}}</label></div>
-	<div class = "col-xs-2"><label>{{conference_presenter.presenter_lastname}}</label></div>
+	<div class = "col-xs-2"><label>{{conference_presenter.firstname}}</label></div>
+	<div class = "col-xs-2"><label>{{conference_presenter.lastname}}</label></div>
 	<div class = "col-xs-6"><label>{{conference_presenter.session_name}}</label></div>
-	<div class = "col-xs-2"><label>{{conference_presenter.session_room}}</label></div>
+	<div class = "col-xs-2"><label>{{conference_presenter.session_room}}</label></div><br>
 
 {% endfor %}
 </div>

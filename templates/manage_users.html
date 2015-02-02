@@ -1,0 +1,36 @@
+{% extends "main.html" %}
+{% block maincontent %}
+    <h1>
+        Users Accounts
+    </h1>
+      <div>
+      <h3>User Accounts</h3>
+
+        <div>
+          {% for u in basic_users %}
+            <label>{{u.name}} | {{u.last_name}}  |  {{u.email_address}}  |  {{u.verified}}  |   {{u.account_type}}</label>
+                <form action="/admin/delete_user_account" method="POST">
+                  <input type="hidden" name="user_id" value={{u.email_address}}>
+                  <input type="submit" value="Delete Account" />
+                </form>
+                 <br>
+          {% endfor %}
+        </div>
+      </div>
+      <hr>
+      <div>
+      <h3>Add User Account</h3>
+        <div>
+        <form action="/admin/add_user_account" method="POST">
+          <label for="email">Email address</label>
+          <input type="text" name="email" />
+          <label for="name">Name</label>
+          <input type="text" name="name" />
+          <label for="lastname">Last Name</label>
+          <input type="text" name="lastname" />
+          <input type="submit" value="Add Account" />
+        </form>
+        </div>
+      </div>
+
+    {% endblock %}
