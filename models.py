@@ -1,6 +1,6 @@
 import time
 import webapp2_extras.appengine.auth.models
-
+import logging
 from google.appengine.ext import ndb, db, blobstore
 
 from webapp2_extras import security
@@ -8,13 +8,15 @@ from webapp2_extras import security
 class User(webapp2_extras.appengine.auth.models.User):
     email_address = ndb.StringProperty()
     account_type = ndb.StringProperty(required = True, default = "user", choices = ('user', 'admin'))
-
+    password = ndb.StringProperty()
     def set_password(self, raw_password):
         """Sets the password for the current user
         :param raw_password:
         The raw password which will be hashed and stored
         """
+        logging.info('Password in set_password is %s' % raw_password)
         self.password = security.generate_password_hash(raw_password, length=12)
+        logging.info('Hashed pass is %s' % self.password)
 
     @classmethod
     def get_by_auth_token(cls, user_id, token, subject='auth'):
@@ -43,20 +45,21 @@ class User(webapp2_extras.appengine.auth.models.User):
         # object as shown, or you could return the results.
         return cls.query(cls.account_type == 'user')
 
-class PresenterData(db.Model):
-    firstname = db.StringProperty(required = True, indexed = True)
-    lastname = db.StringProperty(required = True)
-    email = db.EmailProperty(required = True)
-    username = db.StringProperty()
-    session_name = db.StringProperty(required = False)
-    session_room = db.StringProperty(indexed = True)
-    date = db.DateTimeProperty(auto_now_add = True)
-    blob_store_key = blobstore.BlobReferenceProperty(default = None)
-    filename = db.StringProperty()
-    presentation_uploaded_to_db = db.BooleanProperty(default = False)
-    presentation_db_path = db.CategoryProperty(indexed = False, default = None)
-    presentation_db_size = db.StringProperty(default = None)
-    user_type = db.StringProperty(required = True, default = "PRESENTER")
+class SessionData(db.Model):
+    firstname =                     db.StringProperty(required = True)
+    lastname =                      db.StringProperty(required = True)
+    email =                         db.EmailProperty(required = True)
+    username =                      db.StringProperty()
+    session_name =                  db.StringProperty(required = False)
+    session_room =                  db.StringProperty(indexed = True)
+    session_date =                  db.StringProperty()
+    date =                          db.DateTimeProperty(auto_now_add = True)
+    blob_store_key =                blobstore.BlobReferenceProperty(default = None)
+    filename =                      db.StringProperty()
+    presentation_uploaded_to_db =   db.BooleanProperty(default = False)
+    presentation_db_path =          db.CategoryProperty(indexed = False, default = None)
+    presentation_db_size =          db.StringProperty(default = None)
+    user_type =                     db.StringProperty(required = True, default = "PRESENTER")
 
 
 """

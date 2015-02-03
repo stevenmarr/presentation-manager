@@ -1,0 +1,29 @@
+{% extends "main.html" %}
+{% block maincontent %}
+    <h1>
+        Check Upload
+    </h1>
+      <div>
+      <h3>Confirm Data</h3>
+
+        <div>
+          {% for row in file_csv %}
+            <label>First name {{row[0]}} | Last name {{row[1]}}  |  Email {{row[2]}}   |   Session Name {{row[3]}}  |
+                   Session Room {{row[4]}}</label>
+
+                 <br>
+
+          {% endfor %}
+          <hr>
+          <form action="/admin/delete_upload" method="POST">
+            <input type="hidden" name="blob_key" value={{blob_key}}>
+            <input type="submit" value="Delete Upload" >
+          </form>
+          <form action="/admin/commit_upload" method="POST">
+            <input type="hidden" name="blob_key" value={{blob_key}}>
+            <input type="submit" value="Commit Upload" >
+          </form>
+        </div>
+      </div>
+
+    {% endblock %}

@@ -1,0 +1,40 @@
+{% extends "main.html" %}
+{% block maincontent %}
+    <h1>
+        Edit Session
+    </h1>
+
+        <div>
+
+        <form action="/admin/update_session" method="POST">
+
+          <label for="firstname">First Name</label>
+          <input type="text" name="firstname" value = "{{session.firstname}}">
+
+          <label for="lastname">Last Name</label>
+          <input type="text" name="lastname" value = "{{session.lastname}}">
+
+          <label for="email">Email</label>
+          <input type="text" name="email" value = "{{session.email}}">
+
+          <label for="session_name">Session Name</label>
+          <input type="text" name="session_name" value = "{{session.session_name}}">
+
+          <label for="session_room">Session Room</label>
+          <input type="text" name="session_room" value = "{{session.session_room}}">
+
+          <label for="date">Session Date</label>
+          <input type="date" name="session_date" value = "{{session.session_date}}">
+
+          <label for="time">Session Time</label>
+          <input type="time" name="session_time" value = "{{session.session_time}}">
+
+          <label for="file">Session Presentation</label>
+          <input type="file" name="file">
+          <input type="hidden" name="session_key" value={{session_key}}>
+          <input type="submit" value="Update Session">
+        </form>
+        </div>
+
+
+    {% endblock %}

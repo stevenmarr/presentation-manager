@@ -4,7 +4,7 @@ from models import User
 import webapp2
 import time
 from webapp2_extras.appengine.users import admin_required as super_admin_required
-
+from secrets import DB_TOKEN, SECRET_KEY
 class SuperAdmin(BaseHandler):
     @super_admin_required
     def get(self):
@@ -20,16 +20,16 @@ class AddAdminAccountHandler(BaseHandler):
     #@super_admin_required
     def post(self):
         email = self.request.get('email')
-        name = self.request.get('name')
-        last_name = self.request.get('lastname')
+        firstname = self.request.get('name')
+        lastname = self.request.get('lastname')
         unique_properties = ['email_address']
         session, user = self.user_model.create_user(email,
                                                     unique_properties,
-                                                    email_address=email,
-                                                    account_type = 'admin',
-                                                    name=name,
-                                                    last_name=last_name,
-                                                    verified=False)
+                                                    email_address=  email,
+                                                    account_type =  'admin',
+                                                    firstname =     firstname,
+                                                    lastname =      lastname,
+                                                    verified =      False)
         time.sleep(.25)
         if not session:
             self.display_message('Unable to create user for email %s because of \
@@ -46,6 +46,11 @@ class DeleteAdminAccountHandler(BaseHandler):
             user.key.delete()
             time.sleep(.25)
         self.redirect('/super_admin/manage_users')
+
+class ManagerAppVariablesHanlder(BaseHandler):
+    def get(self):
+        self.render_template('app_variables', )
+
 
 app = webapp2.WSGIApplication(
           [webapp2.Route('/super_admin', SuperAdmin),

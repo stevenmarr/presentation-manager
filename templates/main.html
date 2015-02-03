@@ -27,17 +27,19 @@
       <p>
         {% if not user %}
           <a href="/login">Login</a>
+          |
+          <a href="/activate">Activate Account</a>
+          |
+
         {% else %}
-          Logged in as <span style="background-color: OldLace">{{ user.name }} | {{user.account_type}}</span> | <a href="/logout">Logout</a>
+          Logged in as <span style="background-color: OldLace">{{ user.firstname }} | Acct: {{user.account_type}}</span> | <a href="/logout">Logout</a>
+          | <a href="/">Presenters</a> (login required)
+          | <a href="/admin">Admin</a> (admin login required)
         {% endif %}
         |
         <a href="/">Home</a>
         |
-        <a href="/activate">Activate Account</a>
-        |
-        <a href="/">Presenters</a> (login required)
-        |
-        <a href="/admin">Admin</a> (admin login required)
+
 
         <!--<a href="http://blog.abahgat.com/2013/01/07/user-authentication-with-webapp2-on-google-app-engine/">Tutorial</a>
         |
