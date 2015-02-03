@@ -2,7 +2,7 @@
 
 from google.appengine.ext.webapp import template
 from google.appengine.ext import ndb
-
+import time
 import logging
 import os.path
 import webapp2
@@ -12,7 +12,7 @@ from webapp2_extras import sessions, jinja2
 from webapp2_extras import users
 from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
-
+from secrets import SECRET_KEY
 def send_email(email, subject, msg):
     message = mail.EmailMessage(sender = "Presentation Mgr Support <marr.stevenmarr@gmail.com>",
                                 to = email,
@@ -73,7 +73,8 @@ def jinja2_factory(app):
 def validate(name, type = 'string'):
     return name
 
-
+def check_csv(csv):
+    return csv
 
 
 
@@ -161,15 +162,15 @@ class MainHandler(BaseHandler):
   def get(self):
     self.render_template('home.html')
 
-def add_users(user_id, account_type):
+def add_users(user_id, account_type): #deprecated
     user = models.User()
     unique_properties = ['email']
     session, user = user.create_user(user_id,
                                      unique_properties,
                                      email = user_id,
                                      account_type = account_type,
-                                     name='Test',
-                                     last_name='Test',
+                                     firstname='Test',
+                                     lastname='Test',
                                      verified=False)
     return session, user
 
@@ -178,19 +179,22 @@ class AccountActivateHandler(BaseHandler):
     self.render_template('activate.html')
 
   def post(self):
-    user_name = self.request.get('email')
     email = self.request.get('email')
-    name = self.request.get('name')
     password = self.request.get('password')
     password_verify = self.request.get('verify')
+
     if password != password_verify:
         self.display_message('Passwords do not match, please activate again')
-    last_name = self.request.get('lastname')
-
-    user = self.user_model.get_by_auth_id(user_name)
-    #logging.info('User is %s' % user.email_address)
+        return
+    user = self.user_model.get_by_auth_id(email)
+    #logging.info('Email is %s' % email)
+    #logging.info('User is %s' % user)
     if user:
+        #logging.info('User is %s' % user)
+        #logging.info('Password is %s' % password)
         user.set_password(password)
+        user.put()
+        time.sleep(.25)
         user_id = user.get_id()
         token = self.user_model.create_signup_token(user_id)
         verification_url = self.uri_for('verification', type='v', user_id=user_id,
@@ -201,7 +205,7 @@ class AccountActivateHandler(BaseHandler):
         self.display_message(msg.format(url=verification_url))
     else:
         self.diplay_message('That email address does not match an entry in our records')
-
+        return
 
 class ForgotPasswordHandler(BaseHandler):
   def get(self):
@@ -304,15 +308,15 @@ class LoginHandler(BaseHandler):
     self._serve_page()
 
   def post(self):
-    username = self.request.get('username')
-    user = self.user_model.get_by_auth_id(username)
+    email = self.request.get('email')
+    user = self.user_model.get_by_auth_id(email)
     if not user.password:
         self.redirect('/activate')
         return
     password = self.request.get('password')
 
     try:
-      u = self.auth.get_user_by_password(username, password, remember=True,
+      u = self.auth.get_user_by_password(email, password, remember=True,
         save_session=True)
 
       self.redirect(self.uri_for('home'))
@@ -321,9 +325,9 @@ class LoginHandler(BaseHandler):
       self._serve_page(True)
 
   def _serve_page(self, failed=False):
-    username = self.request.get('username')
+    email = self.request.get('email')
     params = {
-      'username': username,
+      'email': email,
       'failed': failed
     }
     self.render_template('login.html', params)
@@ -341,24 +345,24 @@ class AuthenticatedHandler(BaseHandler):
 config = {
   'webapp2_extras.auth': {
     'user_model': 'models.User',
-    'user_attributes': ['name', 'account_type']
+    'user_attributes': ['firstname', 'account_type']
   },
   'webapp2_extras.sessions': {
-    'secret_key': 'YOUR_SECRET_KEY'
+    'secret_key': SECRET_KEY
   }
 }
 
 app = webapp2.WSGIApplication([
-    webapp2.Route('/', MainHandler, name='home'),
-    webapp2.Route('/activate', AccountActivateHandler, name='activate'),
-    webapp2.Route('/signup', AccountActivateHandler, name='activate'),
+    webapp2.Route('/',              MainHandler,            name='home'),
+    webapp2.Route('/activate',      AccountActivateHandler, name='activate'),
+    webapp2.Route('/signup',        AccountActivateHandler, name='activate'),
     webapp2.Route('/<type:v|p>/<user_id:\d+>-<signup_token:.+>',
-      handler=VerificationHandler, name='verification'),
-    webapp2.Route('/password', SetPasswordHandler),
-    webapp2.Route('/login', LoginHandler, name='login'),
-    webapp2.Route('/logout', LogoutHandler, name='logout'),
-    webapp2.Route('/forgot', ForgotPasswordHandler, name='forgot'),
-    webapp2.Route('/authenticated', AuthenticatedHandler, name='authenticated')
+                            handler=VerificationHandler,    name='verification'),
+    webapp2.Route('/password',      SetPasswordHandler),
+    webapp2.Route('/login',         LoginHandler,           name='login'),
+    webapp2.Route('/logout',        LogoutHandler,          name='logout'),
+    webapp2.Route('/forgot',        ForgotPasswordHandler,  name='forgot'),
+    webapp2.Route('/authenticated', AuthenticatedHandler,   name='authenticated')
 ], debug=True, config=config)
 
 logging.getLogger().setLevel(logging.DEBUG)
