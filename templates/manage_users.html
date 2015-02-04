@@ -8,10 +8,10 @@
 
         <div>
           {% for u in basic_users %}
-            <label>{{u.name}} | {{u.last_name}}  |  {{u.email_address}}  |  {{u.verified}}  |   {{u.account_type}}</label>
+            <label>{{u.firstname}} {{u.lastname}}  |  {{u.email_address}}  |  {{u.verified}}  |   {{u.account_type}}</label>
                 <form action="/admin/delete_user_account" method="POST">
                   <input type="hidden" name="user_id" value={{u.email_address}}>
-                  <input type="submit" value="Delete Account" />
+                  <input type="submit" value="Delete Account"/>
                 </form>
                  <br>
           {% endfor %}

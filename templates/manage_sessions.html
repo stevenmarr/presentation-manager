@@ -14,7 +14,8 @@
                    {% if session.blob_store_key == None %}
                      <label >| Not Available |</label>
                    {% else %}
-                       <a href = "/admin/serve/{{session.blob_store_key.key()}}">|  Presentation  |</a>
+                       |<a href = "{{'/serve/%s' % session.blob_store_key.key()}}">{{session.filename}}</a>|
+
                    {% endif %}
                 <form action="/admin/delete_session" method="POST">
                   <input type="hidden" name="session_key" value={{session.key()}}>
@@ -34,7 +35,7 @@
       <h3>Add New Session</h3>
         <div>
 
-        <form action="{{upload_url}}" method="POST" enctype="multipart/form-data">
+        <form action="{{session_upload_url}}" method="POST" enctype="multipart/form-data">
 
           <label for="firstname">First Name</label>
           <input type="text" name="firstname" value = {{firstname}}>

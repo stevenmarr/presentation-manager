@@ -17,7 +17,7 @@
 		{% if db_entry.blob_store_key == None %}
 			<div class = "col-xs-1"><label >Not Available</label></div>
 		{% else %}
-				<div class = "col-xs-1"><a href = "/serve/{{db_entry.blob_store_key.key()}}">Presentation</a></div>
+				<div class = "col-xs-1"><a href = "/duck{{db_entry.blob_store_key.key()}}">Presentation</a></div>
 		{% endif %}
 	{% endfor %}
 </div>

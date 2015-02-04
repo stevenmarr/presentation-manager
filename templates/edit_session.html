@@ -6,7 +6,7 @@
 
         <div>
 
-        <form action="/admin/update_session" method="POST">
+          <form action="{{upload_url}}" method="POST" enctype="multipart/form-data">
 
           <label for="firstname">First Name</label>
           <input type="text" name="firstname" value = "{{session.firstname}}">
@@ -29,7 +29,8 @@
           <label for="time">Session Time</label>
           <input type="time" name="session_time" value = "{{session.session_time}}">
 
-          <label for="file">Session Presentation</label>
+          <label for="file">Session Presentation <a href = "{{'/serve/%s' % session.blob_store_key.key()}}">
+           {{session.filename}}</a></label>
           <input type="file" name="file">
           <input type="hidden" name="session_key" value={{session_key}}>
           <input type="submit" value="Update Session">
