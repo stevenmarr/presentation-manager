@@ -2,20 +2,22 @@
 
 from google.appengine.ext.webapp import template
 from google.appengine.ext import ndb
+from google.appengine.api import mail
 import time
 import logging
 import os.path
 import webapp2
 import models
+
 from webapp2_extras import auth
 from webapp2_extras import sessions, jinja2
 from webapp2_extras import users
 from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
 from secrets import SECRET_KEY
-def send_email(email, subject, msg):
+def send_email(to, subject, msg):
     message = mail.EmailMessage(sender = "Presentation Mgr Support <marr.stevenmarr@gmail.com>",
-                                to = email,
+                                to = to,
 
                                 subject=subject,
                                 html = msg)
@@ -23,8 +25,7 @@ def send_email(email, subject, msg):
         message.send()
         return True
     else:
-
-        return None
+        return False
 
 def user_required(handler):
   """
@@ -187,6 +188,9 @@ class AccountActivateHandler(BaseHandler):
         self.display_message('Passwords do not match, please activate again')
         return
     user = self.user_model.get_by_auth_id(email)
+    if user.verified == True:
+        self.display_message('That account is already activated, please <a href="/login">login</a>\
+        to contiue')
     #logging.info('Email is %s' % email)
     #logging.info('User is %s' % user)
     if user:
@@ -199,12 +203,21 @@ class AccountActivateHandler(BaseHandler):
         token = self.user_model.create_signup_token(user_id)
         verification_url = self.uri_for('verification', type='v', user_id=user_id,
                                         signup_token=token, _full=True)
-        msg = 'Send an email to user in order to verify their address. \
-               They will be able to do so by visiting <a href="{url}">{url}</a>'
-
-        self.display_message(msg.format(url=verification_url))
+        #msg = 'Send an email to user in order to verify their address. \
+        #       They will be able to do so by visiting <a href="{url}">{url}</a>'
+        subject = "Please verify your account"
+        msg = 'Thank you for activating your account, we look forward to recieving. \
+               your presentations.  To complete the process please activate your account\
+               by clicking on the following ling <a href="{url}">{url}</a>'
+        body = msg.format(url=verification_url)
+        success = send_email(user.email_address, subject, body)
+        logging.info(body)
+        if success:
+            self.display_message("An email containing verification information has been sent.")
+        else:
+            self.display_message(msg.format(url=verification_url))
     else:
-        self.diplay_message('That email address does not match an entry in our records')
+        self.display_message('That email address does not match an entry in our records')
         return
 
 class ForgotPasswordHandler(BaseHandler):
@@ -310,19 +323,24 @@ class LoginHandler(BaseHandler):
   def post(self):
     email = self.request.get('email')
     user = self.user_model.get_by_auth_id(email)
-    if not user.password:
-        self.redirect('/activate')
+    if user == None:
+        self.display_message("That email address is not in our system, please contact support")
+
         return
-    password = self.request.get('password')
+    else:
+        if not user.password:
+            self.redirect('/activate')
+            return
+        password = self.request.get('password')
 
-    try:
-      u = self.auth.get_user_by_password(email, password, remember=True,
-        save_session=True)
+        try:
+          u = self.auth.get_user_by_password(email, password, remember=True,
+            save_session=True)
 
-      self.redirect(self.uri_for('home'))
-    except (InvalidAuthIdError, InvalidPasswordError) as e:
-      logging.info('Login failed for user %s because of %s', username, type(e))
-      self._serve_page(True)
+          self.redirect(self.uri_for('home'))
+        except (InvalidAuthIdError, InvalidPasswordError) as e:
+          logging.info('Login failed for user %s because of %s', email, type(e))
+          self._serve_page(True)
 
   def _serve_page(self, failed=False):
     email = self.request.get('email')
