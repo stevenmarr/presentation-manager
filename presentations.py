@@ -1,34 +1,35 @@
-import os
-import os.path
+#import os
+##import os.path
 import urllib
-from dropbox import *
+#from dropbox import *
 
-from google.appengine.api import mail
-from google.appengine.ext import blobstore, webapp, db
+#from google.appengine.api import mail
+from google.appengine.ext import blobstore, db
+from models import SessionData
 from google.appengine.ext.webapp import blobstore_handlers
-from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app
-import webapp2_extras.appengine.users as admin_users
-from webapp2_extras import securecookie, security, sessions, auth, jinja2
-import webapp2_extras.appengine.auth.models as auth_models
-from webapp2_extras.appengine.auth.models import Unique
-from main import BaseHandler, user_required, admin_required, config, jinja2_factory, validate, check_csv
-from models import User, SessionData
-from secrets import POST_TO_DROPBOX, SECRET_KEY
-import logging
+#from google.appengine.ext.webapp import template
+#from google.appengine.ext.webapp.util import run_wsgi_app
+#import webapp2_extras.appengine.users as admin_users
+#from webapp2_extras import securecookie, security, sessions, auth, jinja2
+#import webapp2_extras.appengine.auth.models as auth_models
+#from webapp2_extras.appengine.auth.models import Unique
+#from main import BaseHandler, user_required, admin_required, config, jinja2_factory, validate, check_csv
+#from models import User, SessionData
+#from secrets import POST_TO_DROPBOX, SECRET_KEY
+#import logging
 #import jinja2
-import os
+#import os
 import webapp2
-import csv
-import time
-import re
-import random
-import secrets
-import forms
-import models
+#import csv
+#import time
+#import re
+#import random
+#import secrets
+#import forms
+#import models
 
 
-template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+'''template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 #jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
 db_client = client.DropboxClient(secrets.DB_TOKEN, "en_US", rest_client=None)
 #POST_TO_DROPBOX = False
@@ -89,51 +90,7 @@ class UploadHandlerConfData(blobstore_handlers.BlobstoreUploadHandler, BaseHandl
         self.render_response(   'check_upload.html',
                                 file_csv = file_csv,
                                 blob_key = session_data_info.key())
-        #logging.info("CSV files is %s" % csv_f)
-        #for row in file_csv:
-            #logging.info("CSV row is %s" % row)
-            #TODO error handling for uncompatable CSV file
-        #    firstname = validate(row[0])
-            #if firstname == False:
-            #    logging.error("CSV Import error First Name")
-            #    logging.error(row[0])
-    #        lastname = validate(row[1])
-            #if lastname == False:
-            #    logging.error("CSV Import error Last Name")
-            #    logging.error(row[1])
-    #        email = validate(row[2])
-    #        if email == False:
-    #            logging.error("CSV Import error Email")
-    #            logging.error(row[2])
-    #        session_name = validate(row[3])
-    #        if session_name == False:
-    #            logging.error("CSV Import error Session Name")
-    #            logging.error(row[3])
-    #        session_room = validate(row[4])
-    #        if session_room == False:
-    #            logging.error("CSV Import error Session Room")
-    #            logging.error(row[4])
-            #if (firstname and lastname and email and session_name and session_room):
 
-    #        entry = models.SessionData(firstname = firstname,
-    #                              lastname = lastname,
-    ##                              email = email,
-    #                              session_name = session_name,
-    #                              session_room = session_room)
-    #        logging.info("entry processed")
-    #        entry.put()
-
-            #user = models.User()
-            #    unique_properties = ['email_address']
-            #    user.create_user(user_id,
-            #      unique_properties=None,
-            #      email_address=user_id, name='Test', user_type = 'user',
-            #      last_name='Test', verified=False)
-            #else:
-            #    self.redirect('/upload_conference_data/Error-CSV-File-is-an-incorrect-format-or-contains-duplicate-entries-see-readme-for-formatting')
-    #    f.close()
-    #    time.sleep(2)
-    #    self.redirect('/admin/view_conference_data')
 
 class CheckConferenceDataHandler(blobstore_handlers.BlobstoreUploadHandler, BaseHandler):
     @admin_required
@@ -222,23 +179,23 @@ class CopyBlobstoreToDropBox(blobstore_handlers.BlobstoreDownloadHandler):
                     logging.info(response)
                     f.close()
             self.redirect('/')
-
+'''
 class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
   def get(self, resource):
     resource = str(urllib.unquote(resource))
     blob_info = blobstore.BlobInfo.get(resource)
-    query_result = db.GqlQuery("SELECT * FROM SessionData WHERE blob_store_key = '%s'" % resource)
-    for entry in query_result:
-        filename = entry.filename
+    query = db.GqlQuery("SELECT * FROM SessionData WHERE blob_store_key = '%s'" % resource)
+    for session in query:
+        filename = session.filename
     self.send_blob(blob_info, save_as = filename)
-
+'''
 class DiplayAllPresentersAndPresentations(BaseHandler): #Deprecated
     @admin_required
     def get(self):
         db_entries = db.GqlQuery("SELECT * FROM SessionData")
         self.render_response("view_all_data.html",db_entries = db_entries)
 
-class ManageSessionsHandler(BaseHandler):
+class ManageSessionsHandler(BaseHandler): #COPIED
     @admin_required
     def get(self):
         sessions = db.GqlQuery("SELECT * FROM SessionData")
@@ -249,7 +206,7 @@ class ManageSessionsHandler(BaseHandler):
                                 data_upload_url =       data_upload_url,
                                 sessions =              sessions)
 
-class EditSessionHandler(BaseHandler):
+class EditSessionHandler(BaseHandler):#COPIED
     @admin_required
     def post(self):
         key = self.request.get('session_key')
@@ -260,7 +217,7 @@ class EditSessionHandler(BaseHandler):
                                 session =       edit_session,
                                 session_key =   key)
 
-class UpdateSessionHandler(BaseHandler):
+class UpdateSessionHandler(BaseHandler):#COPIED
     @admin_required
     def post(self):
         firstname =     self.request.get('firstname')
@@ -282,7 +239,7 @@ class UpdateSessionHandler(BaseHandler):
         session.put()
         self.redirect('/admin/manage_sessions')
 
-class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler):
+class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler):#COPIED
     @admin_required
     def post(self):
         firstname =     self.request.get('firstname')
@@ -297,6 +254,7 @@ class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler):
         logging.info("Dir of get uploads %s" % dir(self.get_uploads))
 
         blob_info = upload_files[0]
+        #TODO Add session to models.User
 
         new_session = SessionData(      firstname =         firstname,
                                         lastname =          lastname,
@@ -310,7 +268,7 @@ class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler):
         time.sleep(.25)
         self.redirect('/admin/manage_sessions')
 
-class DeleteSessionHandler(BaseHandler):
+class DeleteSessionHandler(BaseHandler):#COPIED
     @admin_required
     def post(self):
         key = self.request.get('session_key')
@@ -319,13 +277,13 @@ class DeleteSessionHandler(BaseHandler):
         time.sleep(.25)
         self.redirect('/admin/manage_sessions')
 
-class ManageUserAccountsHandler(BaseHandler):
+class ManageUserAccountsHandler(BaseHandler):#COPIED
     @admin_required
     def get(self):
         users = User.query(User.account_type == 'user')
         self.render_response("manage_users.html", basic_users = users)
 
-class AddUserAccountHandler(BaseHandler):
+class AddUserAccountHandler(BaseHandler):#COPIED
     @admin_required
     def post(self):
         email = self.request.get('email')
@@ -345,7 +303,7 @@ class AddUserAccountHandler(BaseHandler):
                                   duplicate keys %s' % (email, user))
         self.redirect('/admin/manage_users')
 
-class DeleteUserAccountHandler(BaseHandler):
+class DeleteUserAccountHandler(BaseHandler):#COPIED
     @admin_required
     def post(self):
         user_id = self.request.get('user_id')
@@ -355,34 +313,37 @@ class DeleteUserAccountHandler(BaseHandler):
             user.key.delete()
             time.sleep(.25)
         self.redirect('/admin/manage_users')
-
+'''
 app = webapp2.WSGIApplication(
-          [webapp2.Route('/admin', Admin),
-           webapp2.Route('/upload_presentation', UploadPresentation),
-           webapp2.Route('/tess', UploadHandler), #_ah/upload
-           webapp2.Route('/admin/serve/([^/]+)?', ServeHandler),
-           webapp2.Route('/admin/upload_conference_data/',      UploadHandlerConfData),
+          [#webapp2.Route('/admin', Admin),
+           #webapp2.Route('/upload_presentation', UploadPresentation),
+           #webapp2.Route('/tess', UploadHandler), #_ah/upload
+           #webapp2.Route('/admin/serve/([^/]+)?', ServeHandler),
+           #webapp2.Route('/admin/upload_conference_data/',      UploadHandlerConfData),
           # webapp2.Route('/admin/upload_conference_data/',      UploadConferenceData),#NOT USED
-           webapp2.Route('/admin/check_conference_data/',       CheckConferenceDataHandler),
-           webapp2.Route('/admin/delete_upload',                DeleteConferenceUploadData),
-           webapp2.Route('/admin/commit_upload',                CommitConferenceUploadData),
-           webapp2.Route('/upload_conference_data/([a-z_A-Z-]+)', UploadConferenceData),
-           webapp2.Route('/admin/view_conference_data', ViewConferenceData),
+           #webapp2.Route('/admin/check_conference_data/',       CheckConferenceDataHandler),
+           #webapp2.Route('/admin/delete_upload',                DeleteConferenceUploadData),
+           #webapp2.Route('/admin/commit_upload',                CommitConferenceUploadData),
+           #webapp2.Route('/upload_conference_data/([a-z_A-Z-]+)', UploadConferenceData),
+           #webapp2.Route('/admin/view_conference_data', ViewConferenceData),
+           ('/serve/([^/]+)?', ServeHandler),
+           #webapp2.Route('/post_to_dropbox', CopyBlobstoreToDropBox),
+           webapp2.Route('/serve/([^/]+)?',             ServeHandler),
+           webapp2.Route('/duck/([^/]+)?',                      ServeHandler),
+           webapp2.Route('/duck-([^/]+)?',                      ServeHandler),
+            webapp2.Route('/duck/([^/]+)?',                      ServeHandler)
+           #webapp2.Route('/admin/display_all', DiplayAllPresentersAndPresentations),
 
-           webapp2.Route('/post_to_dropbox', CopyBlobstoreToDropBox),
-           webapp2.Route('/serve/([^/]+)?', ServeHandler),
-           webapp2.Route('/admin/display_all', DiplayAllPresentersAndPresentations),
+           #webapp2.Route('/serve/([^/]+)?', ServeHandler),
 
-           webapp2.Route('/admin/serve/([^/]+)?', ServeHandler),
-
-           webapp2.Route('/admin/manage_users',         ManageUserAccountsHandler),
-           webapp2.Route('/admin/add_user_account',     AddUserAccountHandler),
-           webapp2.Route('/admin/delete_user_account',  DeleteUserAccountHandler),
-           webapp2.Route('/admin/manage_sessions',      ManageSessionsHandler),
-           webapp2.Route('/admin/add_session',          AddSessionHandler),
-           webapp2.Route('/admin/edit_session',         EditSessionHandler),
-           webapp2.Route('/admin/update_session',       UpdateSessionHandler),
-           webapp2.Route('/admin/delete_session',       DeleteSessionHandler),
+           #webapp2.Route('/admin/manage_users',         ManageUserAccountsHandler),
+           #webapp2.Route('/admin/add_user_account',     AddUserAccountHandler),
+           #webapp2.Route('/admin/delete_user_account',  DeleteUserAccountHandler),
+           #webapp2.Route('/admin/manage_sessions',      ManageSessionsHandler),
+           #webapp2.Route('/admin/add_session',          AddSessionHandler),
+           #webapp2.Route('/admin/edit_session',         EditSessionHandler),
+           #webapp2.Route('/admin/update_session',       UpdateSessionHandler),
+           #webapp2.Route('/admin/delete_session',       DeleteSessionHandler),
 
 
-], debug=True, config=config)
+], debug=True)
