@@ -1,5 +1,5 @@
 application: presentationmgr
-version: 2
+version: 3
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -14,13 +14,16 @@ handlers:
   secure: always
 
 - url: /admin.*
-  script: presentations.app
+  script: admin.app
   secure: always
 
 - url: /post_conference_data
   script: presentations.app
   secure: always
 
+- url: /serve/.*
+  script: presentations.app
+  secure: always
 - url: /_ah.*
   script: presentations.app
   secure: always
