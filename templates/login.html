@@ -1,24 +1,76 @@
 {% extends "main.html" %}
-
 {% block maincontent %}
+        <div id="navigation">
+      
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
-<h1>Login</h1>
+<!-- Container -->
+<div id="container">
+  <div class="shell">     
 
-{% if failed %}
+  <!-- Message Error -->
+  {% if failed %}
+		<div class="msg msg-error">
+			<p><strong>{{ message }}</strong></p>
+			
+		</div>
+		<!-- End Message Error -->
+   {% endif %}
+    <!-- Content -->
+      <div id="content">
+      <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Login</h2>
+            
+          </div>
 
-<strong>Login failed!</strong> Check your credentials and try again.
+          <!-- End Box Head --> 
+          <!-- Form -->
+            <div class="form">
+            <form method="POST" action="/login">
+                <p>
+                  <span class="req"></span>
+                  <label>Email <span></span></label>
+                  <input type="email" name="email" value = "{{email}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Password<span></span></label>
+                  <input type="password" name="password" value = "{{password}}" class="field size1"/>
+                </p>  
+                
+             
+            </div>
+            <!-- End Form -->
+            
+            <!-- Form Buttons -->
+            <div class="buttons">
+              
+              <input type="submit" class="button" value="Login" />
+              <a href="/forgot">Forgot password</a>
+            </form> 
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->          
 
-{% endif %}
-
-<form class="form" action= "/login" method="POST">
-  <label for="email">Email</label>
-  <input type="text" value="{{ email }}" name="email"/>
-  <label for="password">Password</label>
-  <input type="password" name="password"/>
-  <button type="submit" class="btn">Login</button>
-</form>
-
-<a href="/forgot">Forgot password</a>
-
-
+      	</div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+          
 {% endblock %}
+
+
+

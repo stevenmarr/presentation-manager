@@ -1,29 +1,77 @@
 {% extends "main.html" %}
 {% block maincontent %}
-    <h1>
-        Check Upload
-    </h1>
-      <div>
-      <h3>Confirm Data</h3>
+<!-- Main Nav -->
+  <div id="navigation">
+      <ul>
+          <!--<li><a href="/admin" ><span>Administration</span></a></li>
+          <li><a href="/admin/manage_sessions" class="active"><span>Manage Sessions</span></a></li>
+          <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
+          <li><a href="admin/update_dropbox"><span>Drop Box Utilities</span></a></li>-->
+      </ul>
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
-        <div>
-          {% for row in file_csv %}
-            <label>First name {{row[0]}} | Last name {{row[1]}}  |  Email {{row[2]}}   |   Session Name {{row[3]}}  |
-                   Session Room {{row[4]}}</label>
+<!-- Container -->
+<div id="container" >
+  <div class="shell"> 
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Confirm Upload</h2>
+            
+          </div>
 
-                 <br>
-
-          {% endfor %}
-          <hr>
-          <form action="/admin/delete_upload" method="POST">
-            <input type="hidden" name="blob_key" value={{blob_key}}>
-            <input type="submit" value="Delete Upload" >
-          </form>
-          <form action="/admin/commit_upload" method="POST">
-            <input type="hidden" name="blob_key" value={{blob_key}}>
-            <input type="submit" value="Commit Upload" >
-          </form>
+          <!-- End Box Head --> 
+          <!-- Table -->
+          <div class="table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <th width>Session </th>
+                <th width>Room</th>
+                <th width >Speaker</th>
+                <th width>Email</th>
+                
+                
+                
+              </tr>
+            {% for row in file_csv %}
+              <tr>
+                <td>{{row[3]}}</td>
+                <td>{{row[4]}}</td>
+                <td>{{row[0]}} {{row[1]}} </td>
+                <td>{{row[2]}} </td>
+               </tr> 
+                
+              {% endfor %}
+              </table>
+              </div>
+              <form action="/admin/delete_upload" method="POST">
+              <input type="hidden" name="blob_key" value={{blob_key}}>
+             <input type="submit" class = "button" value="Delete Upload" >
+              </form>
+              <form action="/admin/commit_upload" method="POST">
+             <input type="hidden" name="blob_key" value={{blob_key}}>
+             <input type="submit" value="Commit Upload" >
+            </form>
         </div>
-      </div>
+       </div> 
+          <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+
+        <!-- End Container -->
 
     {% endblock %}

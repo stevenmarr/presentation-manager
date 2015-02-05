@@ -1,5 +1,130 @@
 {% extends "main.html" %}
 {% block maincontent %}
+<!-- Main Nav -->
+  <div id="navigation">
+      <ul>
+          <li><a href="/admin" ><span>Administration</span></a></li>
+          <li><a href="/admin/manage_sessions" ><span>Manage Sessions</span></a></li>
+          <li><a href="/admin/manage_users" class="active"><span>Manage Users</span></a></li>
+          <li><a href="/admin/update_dropbox"><span>Drop Box Utilities</span></a></li>
+      </ul>
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container" >
+  <div class="shell"> 
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Current Users</h2>
+            
+          </div>
+
+          <!-- End Box Head --> 
+        <!-- Table -->
+          <div class="table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <th width>Firstname </th>
+                <th width >Lastname</th>
+                <th width>Email</th>
+                <th width>Account Activated</th>
+                <th></th>
+                <th></th>
+                
+              </tr>
+            {% for u in basic_users %}
+              <tr>
+                <td>{{u.firstname}} </td>
+                <td>{{u.lastname}}</td>
+                <td>{{u.email_address}}</td>
+                <td>{{u.verified}}</td>
+                <form action="/admin/delete_user_account" method="POST">
+                  <td><input type="hidden" name="user_id" value="{{u.email_address}}"/>
+                  <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                </form>
+                </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Add New User</h2>
+          </div>
+          <!-- End Box Head -->
+          
+            
+            <!-- Form -->
+            <div class="form">
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter First Name <span>(Required Field)</span></label>
+                  <input type="text" name="firstname" value = "{{firstname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter Last Name <span>(Required Field)</span></label>
+                  <input type="text" name="lastname" value = "{{lastname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter Email Address <span>(Required Field)</span></label>
+                  <input type="email" name="email" value = "{{email}}" class="field size1"/>
+                </p>  
+              
+            </div>
+            <!-- End Form -->
+            
+            <!-- Form Buttons -->
+            <div class="buttons">
+              
+              <input type="submit" class="button" value="Add User" />
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->          
+         
+
+
+
+
+
+
+
+
+
+
+          </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+          {% endblock %}
+
+        <!-- End Container -->
+      
+
+ <!--
     <h1>
         Users Accounts
     </h1>
@@ -33,4 +158,4 @@
         </div>
       </div>
 
-    {% endblock %}
+    

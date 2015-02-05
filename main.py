@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 from google.appengine.ext.webapp import template
-from google.appengine.ext import ndb
+from google.appengine.ext import ndb, db, blobstore
 from google.appengine.api import mail
+from google.appengine.ext.webapp import blobstore_handlers
 import time
 import logging
 import os.path
@@ -15,6 +16,8 @@ from webapp2_extras import users
 from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
 from secrets import SECRET_KEY
+from models import SessionData
+
 def send_email(to, subject, msg):
     message = mail.EmailMessage(sender = "Presentation Mgr Support <marr.stevenmarr@gmail.com>",
                                 to = to,
@@ -35,7 +38,7 @@ def user_required(handler):
   def check_login(self, *args, **kwargs):
     auth = self.auth
     if auth.get_user_by_session():
-        if auth.get_user_by_session()['account_type'] == 'user':
+        if auth.get_user_by_session()['account_type'] == 'user' or 'admin':
             return handler(self, *args, **kwargs)
         else: self.redirect('/login')
     else: self.redirect('/login')
@@ -317,14 +320,16 @@ class SetPasswordHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
   def get(self):
-
+    if self.user:
+        self.redirect('/admin')
     self._serve_page()
 
   def post(self):
     email = self.request.get('email')
     user = self.user_model.get_by_auth_id(email)
     if user == None:
-        self.display_message("That email address is not in our system, please contact support")
+        self._serve_page(True, "Invalid login please try again")
+        #self.display_message("That email address is not in our system, please contact support")
 
         return
     else:
@@ -337,16 +342,21 @@ class LoginHandler(BaseHandler):
           u = self.auth.get_user_by_password(email, password, remember=True,
             save_session=True)
 
-          self.redirect(self.uri_for('home'))
+          if self.auth.get_user_by_session()['account_type'] == 'admin':
+              self.redirect('/admin')
+              return
+
+          self.redirect(self.uri_for('default'))
         except (InvalidAuthIdError, InvalidPasswordError) as e:
           logging.info('Login failed for user %s because of %s', email, type(e))
           self._serve_page(True)
 
-  def _serve_page(self, failed=False):
+  def _serve_page(self, failed=False, message = ""):
     email = self.request.get('email')
     params = {
       'email': email,
-      'failed': failed
+      'failed': failed,
+      'message': message
     }
     self.render_template('login.html', params)
 
@@ -355,10 +365,13 @@ class LogoutHandler(BaseHandler):
     self.auth.unset_session()
     self.redirect(self.uri_for('home'))
 
-class AuthenticatedHandler(BaseHandler):
+class UserDefaultHandler(BaseHandler):
   @user_required
   def get(self):
-    self.render_template('authenticated.html')
+    logging.info(self.user.email_address)
+    sessions = db.GqlQuery("SELECT * FROM SessionData WHERE email = '%s'" % self.user.email_address)
+    upload_url = blobstore.create_upload_url('/upload_presentation')
+    self.render_response('presenters.html', sessions = sessions, upload_url = upload_url)
 
 config = {
   'webapp2_extras.auth': {
@@ -379,8 +392,8 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/password',      SetPasswordHandler),
     webapp2.Route('/login',         LoginHandler,           name='login'),
     webapp2.Route('/logout',        LogoutHandler,          name='logout'),
-    webapp2.Route('/forgot',        ForgotPasswordHandler,  name='forgot'),
-    webapp2.Route('/authenticated', AuthenticatedHandler,   name='authenticated')
+    webapp2.Route('/forgot',          ForgotPasswordHandler,  name='forgot'),
+    webapp2.Route('/default', UserDefaultHandler,   name='default')
 ], debug=True, config=config)
 
 logging.getLogger().setLevel(logging.DEBUG)

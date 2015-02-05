@@ -1,0 +1,162 @@
+{% extends "main.html" %}
+{% block maincontent %}
+<!-- Main Nav -->
+
+  </div>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container" >
+  <div class="shell">
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          <!-- Box -->
+        {% for session in sessions %}
+        <div class="box">
+      <!-- Box Head -->
+      
+          <div class="box-head">
+            <h2 class="left">{{session.session_name}}</h2>
+
+          </div>
+
+          <!-- End Box Head -->
+        <!-- Table -->
+
+          <div class="table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <th width = "300">Session Name </th>
+                <th width = "300">Presentation</th>
+                <th width = "100">Date</th>
+
+                
+                <th>Upload</th>
+              </tr>
+
+              <tr>
+                <td>{{session.session_name}}</td>
+                
+                <!-- Presentation URL -->
+                {% if session.blob_store_key == None %}
+                    <td>Not Available</td>
+                {% else %}
+                    <td><a href = "{{'/serve/%s' % session.blob_store_key.key()}}">DL</a></td>
+                {% endif %}
+                    <td>{{session.date}}</td>
+                    <td><label>Presentation Upload<span></span></label>
+                  <input type="file"  name="file"/></td></tr>
+              
+            </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+            
+             <!-- End Box -->
+             {% endfor %}
+
+          </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+
+        <!-- End Container -->
+
+
+ {% endblock %}
+
+        <!--<div><table style="width:100%">
+            <tr>
+              <th>First Name</th>
+              <th>Last Name </th>
+              <th>Email</th>
+              <th>Session Name</th>
+              <th>Session Room</th>
+              <th>Presentation</th>
+
+          {% for session in sessions %}
+            <tr>
+            <td>{{session.firstname}}</td>
+            <td>{{session.lastname}}</td>
+            <td>{{session.email}}</td>
+            <td>{{session.session_name}}</td>
+            <td>{{session.session_room}}</td>
+
+
+
+                {% if session.blob_store_key == None %}
+                    <td>Not Available</td>
+                {% else %}
+                    <td><a href = "{{'/serve/%s' % session.blob_store_key.key()}}">{{session.filename}}</a></td>
+                {% endif %}
+                  <form action="/admin/delete_session" method="POST">
+                    <td><input type="hidden" name="session_key" value="{{session.key()}}">
+                    <input type="image" src="/img/Delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                  </form>
+
+                <form action="/admin/edit_session" method="POST">
+                  <td><input type="hidden" name="session_key" value={{session.key()}}>
+                  <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                </form>
+
+
+          {% endfor %}
+          </table>
+        </div>
+      </div>
+      <hr>
+      <div>
+
+
+        <form action="{{session_upload_url}}" method="POST" enctype="multipart/form-data">
+          <fieldset>
+          <legend>Add New Session</legend>
+          <label for="firstname">First Name</label>
+          <input type="text" name="firstname" value = {{firstname}}>
+
+          <label for="lastname">Last Name</label>
+          <input type="text" name="lastname" value = {{lastname}}>
+
+          <label for="email">Email</label>
+          <input type="text" name="email" value = {{email}}>
+
+          <label for="session_name">Session Name</label>
+          <input type="text" name="session_name" value = {{session_name}}>
+
+          <label for="session_room">Session Room</label>
+          <input type="text" name="session_room" value = {{session_room}}>
+
+          <label for="date">Session Date</label>
+          <input type="date" name="session_date" value = {{session_date}}>
+
+          <label for="time">Session Time</label>
+          <input type="time" name="session_time" value = {{session_time}}>
+
+          <label for="file">Session Presentation</label>
+          <input type="file" name="file" >
+
+          <input type="submit" value="Add Session" >
+        </fieldset>
+        </form>
+        </div>
+      <hr>
+      <div>
+
+        <form action="{{data_upload_url}}" method="POST" enctype="multipart/form-data">
+        <fieldset>
+          <legend>Upload Conference Data as CSV formatted file</legend>
+        <input type="file" name="file"><br>
+        <input type="submit" name="submit" value="Upload Data">
+        </fieldset>
+        </form>
+      </div>
+      </div>-->

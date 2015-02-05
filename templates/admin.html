@@ -1,20 +1,33 @@
 {% extends "main.html" %}
 {% block maincontent %}
-        <h1>Administration</h1>
-        <body>
-          <a href = "/admin/manage_users">Manage User Accounts</a><br>
-          <a href = "/admin/manage_sessions">Manage Sessions</a><br>
-          <hr>
-          <a href = "/admin/update_dropbox">Update DropBox Data</a><br>
-            <!--<a href = "/admin/upload_conference_data/">Upload Conference Data</a><br>
+        <div id="navigation">
+      <ul>
+          <li><a href="/admin" class="active"><span>Administration</span></a></li>
+          <li><a href="/admin/manage_sessions"><span>Manage Sessions</span></a></li>
+          <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
+          <li><a href="/admin/update_dropbo"><span>Drop Box Utilities</span></a></li>
+      </ul>
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
-            <a href = "/admin/display_all">Display All</a><br>
-            <a href = "/admin/delete_conference_data">Delete Conference Data</a><br>
-            <a href = "/admin/add_presenter">Add Presenter</a><br>-->
+<!-- Container -->
+<div id="container">
+  <div class="shell">     
 
+  <!-- Message OK -->   
+    <div class="msg msg-ok">
+      <p><strong>Welcome Administrator</strong></p>
+      
+    </div>
 
-
-        </body>
-
-</html>
+    <!-- End Message OK -->   
+    <!-- Content -->
+      <div id="content">
+      </div>   
+    </div>
+  </div>
+          
 {% endblock %}

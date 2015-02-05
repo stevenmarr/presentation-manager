@@ -1,42 +1,235 @@
 {% extends "main.html" %}
 {% block maincontent %}
-    <h1>
-        Manage Presentations
-    </h1>
-      <div>
-      <h3>Presentations</h3>
+<!-- Main Nav -->
+  <div id="navigation">
+      <ul>
+          <li><a href="/admin" ><span>Administration</span></a></li>
+          <li><a href="/admin/manage_sessions" class="active"><span>Manage Sessions</span></a></li>
+          <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
+          <li><a href="/admin/update_dropbox"><span>Drop Box Utilities</span></a></li>
+      </ul>
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
-        <div>
+<!-- Container -->
+<div id="container" >
+  <div class="shell"> 
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Current Sessions</h2>
+            
+          </div>
+
+          <!-- End Box Head --> 
+        <!-- Table -->
+          <div class="table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <th width>Session and Room </th>
+                <th width >Speaker</th>
+                <th width>Date</th>
+                <th width>Presentation</th>
+                <th width class="ac">Control</th>
+                <th></th>
+              </tr>
+            {% for session in sessions %}
+              <tr>
+                <td>{{session.session_name}}{{session.session_room}}</td>
+                
+                <td>{{session.firstname}} {{session.lastname}}</td>
+                <td>{{session.session_date}}</td>
+                <!-- Presentation URL -->
+                {% if session.blob_store_key == None %}
+                    <td>Not Available</td>
+                {% else %}
+                    <td><a href = "{{'/serve/%s' % session.blob_store_key.key()}}">DL</a></td>
+                {% endif %}
+                <!-- Session Deletes -->
+                
+                  <form action="/admin/delete_session" method="POST">
+                    <td><input type="hidden" name="session_key" value="{{session.key()}}">
+                    <input type="image" src="/img/Delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                  </form>
+                <!-- Session Edits -->
+                  <form action="/admin/edit_session" method="POST">
+                    <td><input type="hidden" name="session_key" value={{session.key()}}>
+                    <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                  </form>
+                </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Add New Session</h2>
+          </div>
+          <!-- End Box Head -->
+          
+          <form action="{{session_upload_url}}" method="POST" enctype="multipart/form-data">
+            
+            <!-- Form -->
+            <div class="form">
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter First Name <span>(Required Field)</span></label>
+                  <input type="text" name="firstname" value = "{{firstname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter Last Name <span>(Required Field)</span></label>
+                  <input type="text" name="lastname" value = "{{lastname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter Email Address <span>(Required Field)</span></label>
+                  <input type="email" name="email" value = "{{email}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Session Name <span>(Required Field)</span></label>
+                  <input type="text" name="session_name" value = "{{session_name}}" class="field size1"/>
+                </p>
+                <p>
+                  <span class="req"></span>
+                  <label>Session Room <span></span></label>
+                  <input type="text" name="session_room" value = "{{session_room}}" class="field size1"/>
+                </p>  
+                <p class="inline-field">
+                  <label>Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Time</label>
+                  <input type="date" name="session_date" value = "{{session_date}}" class="field size2"/>
+                  <input type="time" name="session_time" value = "{{session_time}}" class="field size2"/>   
+                </p>  
+                <p>
+                  <label>Presentation Upload<span></span></label>
+                  <input type="file"  name="file"/>
+                </p>
+              
+            </div>
+            <!-- End Form -->
+            
+            <!-- Form Buttons -->
+            <div class="buttons">
+              
+              <input type="submit" class="button" value="Add Session" />
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->          
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Upload Session Data via CSV</h2>
+          </div>
+          <!-- End Box Head -->
+          <form action="{{data_upload_url}}" method="POST" enctype="multipart/form-data">
+          
+            
+            <!-- Form -->
+            <div class="form"> 
+                <p>
+                  <label>CSV Upload<span></span></label>
+                  <input type="file"  name="file"/>
+                </p>
+              
+            </div>
+            <!-- End Form -->
+            
+            <!-- Form Buttons -->
+            <div class="buttons">
+              
+              <input type="submit" class="button" value="Upload Session Data" />
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->          
+
+
+
+
+
+
+
+
+
+
+          </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+
+        <!-- End Container -->
+      
+
+ {% endblock %}
+            
+        <!--<div><table style="width:100%">
+            <tr>
+              <th>First Name</th>
+              <th>Last Name </th>
+              <th>Email</th>
+              <th>Session Name</th>
+              <th>Session Room</th>
+              <th>Presentation</th>
+              
           {% for session in sessions %}
-            <label>{{session.firstname}} | {{session.lastname}}  |  {{session.email}}   |   {{session.session_name}}  |
-                   {{session.session_room}} | {{session.filename}}  | {{session.session_date}}</label>
+            <tr>
+            <td>{{session.firstname}}</td>
+            <td>{{session.lastname}}</td>
+            <td>{{session.email}}</td>
+            <td>{{session.session_name}}</td>
+            <td>{{session.session_room}}</td>
+            
+            
 
-                   {% if session.blob_store_key == None %}
-                     <label >| Not Available |</label>
-                   {% else %}
-                       |<a href = "{{'/serve/%s' % session.blob_store_key.key()}}">{{session.filename}}</a>|
-
-                   {% endif %}
-                <form action="/admin/delete_session" method="POST">
-                  <input type="hidden" name="session_key" value={{session.key()}}>
-                  <input type="submit" value="Delete Session" >
-                </form>
+                {% if session.blob_store_key == None %}
+                    <td>Not Available</td>
+                {% else %}
+                    <td><a href = "{{'/serve/%s' % session.blob_store_key.key()}}">{{session.filename}}</a></td>
+                {% endif %}
+                  <form action="/admin/delete_session" method="POST">
+                    <td><input type="hidden" name="session_key" value="{{session.key()}}">
+                    <input type="image" src="/img/Delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                  </form>
+                
                 <form action="/admin/edit_session" method="POST">
-                  <input type="hidden" name="session_key" value={{session.key()}}>
-                  <input type="submit" value="Edit Session" >
+                  <td><input type="hidden" name="session_key" value={{session.key()}}>
+                  <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
                 </form>
-                 <br>
+                
 
           {% endfor %}
+          </table>
         </div>
       </div>
       <hr>
       <div>
-      <h3>Add New Session</h3>
-        <div>
+     
 
         <form action="{{session_upload_url}}" method="POST" enctype="multipart/form-data">
-
+          <fieldset>
+          <legend>Add New Session</legend>
           <label for="firstname">First Name</label>
           <input type="text" name="firstname" value = {{firstname}}>
 
@@ -62,17 +255,21 @@
           <input type="file" name="file" >
 
           <input type="submit" value="Add Session" >
+        </fieldset>
         </form>
         </div>
       <hr>
       <div>
-        <h3>Upload Conference Data CSV</h3>
+        
         <form action="{{data_upload_url}}" method="POST" enctype="multipart/form-data">
+        <fieldset>
+          <legend>Upload Conference Data as CSV formatted file</legend>
         <input type="file" name="file"><br>
         <input type="submit" name="submit" value="Upload Data">
+        </fieldset>
         </form>
       </div>
-      </div>
+      </div>-->
 
 
-    {% endblock %}
+   

@@ -6,8 +6,15 @@ threadsafe: yes
 
 handlers:
 
+
+- url: images
+  static_dir: statics/img
+
 - url: /css
   static_dir: statics/css
+
+- url: /img
+  static_dir: statics/img
 
 - url: /super_admin.*
   script: super_admin_handlers.app

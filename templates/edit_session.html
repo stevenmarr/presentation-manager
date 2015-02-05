@@ -7,10 +7,13 @@
         <div>
 
           <form action="{{upload_url}}" method="POST" enctype="multipart/form-data">
-
-          <label for="firstname">First Name</label>
+            <fieldset>
+              <legend>Edit Session</legend>
+          <table style = "width:100%">
+          <th>First Name</th>  
+          <!--<label for="firstname">First Name</label>-->
           <input type="text" name="firstname" value = "{{session.firstname}}">
-
+          <th>Last Name</th>
           <label for="lastname">Last Name</label>
           <input type="text" name="lastname" value = "{{session.lastname}}">
 
@@ -28,14 +31,27 @@
 
           <label for="time">Session Time</label>
           <input type="time" name="session_time" value = "{{session.session_time}}">
-
+          {% if session.blob_store_key!= None %}
           <label for="file">Session Presentation <a href = "{{'/serve/%s' % session.blob_store_key.key()}}">
            {{session.filename}}</a></label>
-          <input type="file" name="file">
-          <input type="hidden" name="session_key" value={{session_key}}>
-          <input type="submit" value="Update Session">
+           {% endif %}
+          <!--<input type="file" name="file">-->
+          <!--File input icon-->
+          <div class="image-upload">
+            <label for="file-input">
+              <img src="/img/open-file-icon.png" width="30" height="30"/>
+            </label>
+<!--
+              <input id="file-input" type="file" name="file"/>
+            </div>
+
+          <input type="image" src="/img/open-file-icon.png" name="file" alt="File" width="30" height="30"/>
+          <input type="hidden" name="session_key" value={{session_key}}>-->
+          <input type="image" src="/img/save-as.png" name="submit" alt="Submit" width="30" height="30"/>
+          <!--<input type="submit" value="Update Session">-->
+        </fieldset>
         </form>
         </div>
-
+        
 
     {% endblock %}

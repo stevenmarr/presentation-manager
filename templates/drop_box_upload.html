@@ -1,10 +1,34 @@
 {% extends "main.html" %}
-
 {% block maincontent %}
-{% for report in upload_report %}
-<p>{{report}}</p>
-<hr>
-{% endfor %}
+        <div id="navigation">
+      <ul>
+          <li><a href="/admin"><span>Administration</span></a></li>
+          <li><a href="/admin/manage_sessions"><span>Manage Sessions</span></a></li>
+          <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
+          <li><a href="/admin/update_dropbo" class="active"><span>Drop Box Utilities</span></a></li>
+      </ul>
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
+<!-- Container -->
+<div id="container">
+  <div class="shell">     
 
+  <!-- Message OK -->   
+    <div class="msg msg-ok">
+    {% for report in upload_report %}	
+      <p><strong>{{report}}</strong></p>
+    {% endfor %}  
+    </div>
+
+    <!-- End Message OK -->   
+    <!-- Content -->
+      <div id="content">
+      </div>   
+    </div>
+  </div>
+          
 {% endblock %}

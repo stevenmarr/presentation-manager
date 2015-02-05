@@ -1,57 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8"/>
-    <title>{% block title %}Presentation Manager{% endblock %}</title>
-    <style>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <title>Presentation Manager</title>
+  <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
+</head>
+<body>
+<!-- Header -->
+<div id="header">
+  <div class="shell">
+    <!-- Logo + Top Nav -->
+    <div id="top">
+      <h1><a href="#">Conference Media Manager</a></h1>
+      <div id="top-navigation">
+        {% if user %}
+        Welcome <strong>{{ user.firstname }} | Account type: {{user.account_type}}</strong>
+        <span>|</span>
+        <a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
+        <span>|</span>
+        <a href="/logout">Log out</a>
+        {% else %}
+        Welcome
+        <span>|</span>
+        <a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
+        <span>|</span>
+        <a href="/login">Log in</a>
+        {% endif %}
+      </div>
+    </div>
 
-      input {
-        display: block;
-      }
-    </style>
-  </head>
-
-  <body>
-
-  <div class="content">
-    <div class = "container">
-      <div class="row-fluid">
     {% block maincontent %}
 
     {% endblock %}
+  
+<!-- Footer -->
+<div id="footer">
+  <div class="shell">
+    <span class="left">&copy; 2015 - Steven and Jill Marr</span>
+    <span class="right">
+      Powered by <a href="https://cloud.google.com/appengine/" title="Google App Engine">Google App Engine</a>
+    </span>
   </div>
-
-  <div>
-    <footer>
-      <hr/>
-      <p>
-        {% if not user %}
-          <a href="/login">Login</a>
-          |
-          <a href="/activate">Activate Account</a>
-          |
-
-        {% else %}
-          Logged in as <span style="background-color: OldLace">{{ user.firstname }} | Acct: {{user.account_type}}</span> | <a href="/logout">Logout</a>
-          | <a href="/">Presenters</a> (login required)
-          | <a href="/admin">Admin</a> (admin login required)
-        {% endif %}
-        |
-        <a href="/">Home</a>
-        |
-
-
-        <!--<a href="http://blog.abahgat.com/2013/01/07/user-authentication-with-webapp2-on-google-app-engine/">Tutorial</a>
-        |
-        <a href="http://github.com/abahgat/webapp2-user-accounts">Source code</a>
-      </p>
-      <p>
-        Got questions? <a href="http://blog.abahgat.com/about">Get in touch</a>.
-        <small>And if you want to <strong>donate</strong> a little something, <a href="http://abahgat.github.io/webapp2-user-accounts#donate">here</a> a few options.</small>-->
-      </p>
-    </footer>
-  </div>
-
-
-  </body>
+</div>
+<!-- End Footer -->
+  
+</body>
 </html>

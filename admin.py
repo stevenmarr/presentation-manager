@@ -7,7 +7,7 @@ from main import BaseHandler, config, admin_required, jinja2_factory, check_csv
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import db, blobstore
 from google_to_dropbox import CopyBlobstoreToDropBox
-
+from webapp2_extras.appengine.auth.models import Unique
 class Admin(BaseHandler):
     @admin_required
     def get(self):
@@ -31,6 +31,7 @@ class EditSessionHandler(BaseHandler):
     def post(self):
         key = self.request.get('session_key')
         edit_session = SessionData.get(key)
+        logging.info('Edit Session blob key is %s' % edit_session.blob_store_key)
         upload_url = blobstore.create_upload_url('/admin/update_session')
         self.render_response("edit_session.html",
                                 session =       edit_session,
@@ -103,17 +104,19 @@ class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler,  BaseHandler)
             new_session.blob_store_key = blob_info.key()
             new_session.filename = blob_info.filename
             new_session.put()
-        time.sleep(.25)
+            time.sleep(.25)
         self.redirect('/admin/manage_sessions')
 
 class DeleteSessionHandler(BaseHandler):
     @admin_required
     def post(self):
         key = self.request.get('session_key')
+        logging.info('key is %s' % key)
         session = SessionData.get(key)
+        logging.info('session is %s' % session)
         key = session.blob_store_key
-        logging.error("dir for blob store %s" % dir(key))
-        session.blob_store_key.delete()
+        if session.blob_store_key != None:
+            session.blob_store_key.delete()
         session.delete()
         time.sleep(.25)
         self.redirect('/admin/manage_sessions')
@@ -124,25 +127,27 @@ class RenderConferenceUploadDataHandler(blobstore_handlers.BlobstoreUploadHandle
     @admin_required
     def post(self):
         session_data_upload = self.get_uploads('file')
-
-        session_data_info = session_data_upload[0]
-        session_data_file = session_data_info.open()
-        file_csv = csv.reader(session_data_file)
-        self.render_response(   'check_upload.html',
-                                file_csv = file_csv,
-                                blob_key = session_data_info.key())
-
+        if session_data_upload:
+            session_data_info = session_data_upload[0]
+            session_data_file = session_data_info.open()
+            file_csv = csv.reader(session_data_file)
+            self.render_response(   'check_upload.html',
+                                    file_csv = file_csv,
+                                    blob_key = session_data_info.key())
+        else:
+            self.redirect('/admin/manage_sessions')
 class CheckConferenceDataHandler(blobstore_handlers.BlobstoreUploadHandler, BaseHandler):
     @admin_required
     def post(self):
         conference_data_upload = self.get_uploads('file')
-
-        conference_data_file = conference_data_upload[0].open()
-        file_csv = csv.reader(conference_data_file)
-        self.render_response('/admin/check_upload.html',
-                                file_csv = file_csv,
-                                blob_key = conference_data_file.key())
-
+        if conference_data_upload:
+            conference_data_file = conference_data_upload[0].open()
+            file_csv = csv.reader(conference_data_file)
+            self.render_response('/admin/check_upload.html',
+                                    file_csv = file_csv,
+                                    blob_key = conference_data_file.key())
+        else:
+            self.redirect('/admin/manage_sessions')
 class DeleteConferenceUploadData(BaseHandler):
     @admin_required
     def post(self):
