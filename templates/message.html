@@ -1,6 +1,31 @@
 {% extends "main.html" %}
-
 {% block maincontent %}
-<p>{% autoescape off %}{{ message }}{% endautoescape %}</p>
+       
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
+<!-- Container -->
+<div id="container">
+  <div class="shell">     
+
+  <!-- Message OK -->   
+    <div class="msg msg-ok">
+      <p><strong>{% autoescape off %}{{ message }}{% endautoescape %}</strong></p>
+      
+    </div>
+
+    <!-- End Message OK -->   
+    <!-- Content -->
+      <div id="content">
+      </div>   
+    </div>
+  </div>
+          
 {% endblock %}
+
+
+
+
+

@@ -188,7 +188,7 @@ class AccountActivateHandler(BaseHandler):
     password_verify = self.request.get('verify')
 
     if password != password_verify:
-        self.display_message('Passwords do not match, please activate again')
+        self.display_message('Passwords do not match, please try again<a href="/activate">activate</a>')
         return
     user = self.user_model.get_by_auth_id(email)
     if user.verified == True:
@@ -211,16 +211,16 @@ class AccountActivateHandler(BaseHandler):
         subject = "Please verify your account"
         msg = 'Thank you for activating your account, we look forward to recieving. \
                your presentations.  To complete the process please activate your account\
-               by clicking on the following ling <a href="{url}">{url}</a>'
+               by clicking on the following link <a href="{url}">{url}</a>'
         body = msg.format(url=verification_url)
         success = send_email(user.email_address, subject, body)
         logging.info(body)
         if success:
-            self.display_message("An email containing verification information has been sent.")
+            self.display_message('An email containing verification information has been sent.<a href=\"/login\">login</a>')
         else:
             self.display_message(msg.format(url=verification_url))
     else:
-        self.display_message('That email address does not match an entry in our records')
+        self.display_message('That email address does not match an entry in our records<a href="/help">help</a>')
         return
 
 class ForgotPasswordHandler(BaseHandler):

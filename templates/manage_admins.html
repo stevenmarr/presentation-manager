@@ -1,36 +1,120 @@
 {% extends "main.html" %}
 {% block maincontent %}
-    <h1>
-        Manage Admin Accounts
-    </h1>
-      <div>
-      <h3>Admin Accounts</h3>
+<!-- Main Nav -->
+  
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
-        <div>
-          {% for a_user in users %}
-            <label>{{a_user.name}} | {{a_user.last_name}}  |  {{a_user.email_address}}  |  {{a_user.verified}}  |   {{a_user.account_type}}</label>
+<!-- Container -->
+<div id="container" >
+  <div class="shell"> 
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Current Admins</h2>
+            
+          </div>
+
+          <!-- End Box Head --> 
+        <!-- Table -->
+          <div class="table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <th width>Firstname </th>
+                <th width >Lastname</th>
+                <th width>Email</th>
+                <th width>Account Activated</th>
+                <th></th>
+                <th></th>
+                
+              </tr>
+            {% for u in users %}
+              <tr>
+                <td>{{u.firstname}} </td>
+                <td>{{u.lastname}}</td>
+                <td>{{u.email_address}}</td>
+                <td>{{u.verified}}</td>
                 <form action="/super_admin/delete_user_account" method="POST">
-                  <input type="hidden" name="user_id" value={{a_user.email_address}}>
-                  <input type="submit" value="Delete Account" />
+                  <td><input type="hidden" name="user_id" value="{{u.email_address}}"/>
+                  <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
                 </form>
-                 <br>
-          {% endfor %}
+                </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Add New User</h2>
+          </div>
+          <!-- End Box Head -->
+          
+            
+            <!-- Form -->
+            <div class="form">
+              <form action="/super_admin/add_user_account" method="POST">
+                <p>
+                  <span class="req"></span>
+                  <label> First Name <span>(Required Field)</span></label>
+                  <input type="text" name="name" value = "{{firstname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label> Last Name <span>(Required Field)</span></label>
+                  <input type="text" name="lastname" value = "{{lastname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label> Email Address <span>(Required Field)</span></label>
+                  <input type="email" name="email" value = "{{email}}" class="field size1"/>
+                </p>  
+              
+            </div>
+            <!-- End Form -->
+            
+            <!-- Form Buttons -->
+            <div class="buttons">
+              
+              <input type="submit" class="button" value="Add Admin" />
+            </form>
+            </div>
+            <!-- End Form Buttons -->
+          </form>
         </div>
-      </div>
-      <hr>
-      <div>
-      <h3>Add Admin Account</h3>
-        <div>
-        <form action="/super_admin/add_user_account" method="POST">
-          <label for="email">Email address</label>
-          <input type="text" name="email" />
-          <label for="name">Name</label>
-          <input type="text" name="name" />
-          <label for="lastname">Last Name</label>
-          <input type="text" name="lastname" />
-          <input type="submit" value="Add Account" />
-        </form>
-        </div>
-      </div>
+        <!-- End Box -->          
+         
 
-    {% endblock %}
+
+
+
+
+
+
+
+
+
+          </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+          {% endblock %}
+
+
+

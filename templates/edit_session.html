@@ -1,5 +1,110 @@
 {% extends "main.html" %}
 {% block maincontent %}
+<!-- Main Nav -->
+  <div id="navigation">
+
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container" >
+  <div class="shell"> 
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Edit Session</h2>
+          </div>
+          <!-- End Box Head -->
+          
+          <form action="{{upload_url}}" method="POST" enctype="multipart/form-data">
+            
+            <!-- Form -->
+            <div class="form">
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter First Name <span>(Required Field)</span></label>
+                  <input type="text" name="firstname" value = "{{session.firstname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter Last Name <span>(Required Field)</span></label>
+                  <input type="text" name="lastname" value = "{{session.lastname}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Presenter Email Address <span>(Required Field)</span></label>
+                  <input type="email" name="email" value = "{{session.email}}" class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Session Name <span>(Required Field)</span></label>
+                  <input type="text" name="session_name" value = "{{session.session_name}}" class="field size1"/>
+                </p>
+                <p>
+                  <span class="req"></span>
+                  <label>Session Room <span></span></label>
+                  <input type="text" name="session_room" value = "{{session.session_room}}" class="field size1"/>
+                </p>  
+                <p class="inline-field">
+                  <label>Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Time</label>
+                  <input type="date" name="session_date" value = "{{session.session_date}}" class="field size2"/>
+                  <input type="time" name="session_time" value = "{{session.session_time}}" class="field size2"/>   
+                </p>  
+                <p>
+                  <input type="hidden" name="session_key" value="{{session_key}}"/>
+                  <label>Presentation Upload<span></span></label>
+                  <input type="file"  name="file"/>
+                </p>
+              
+            </div>
+            <!-- End Form -->
+            
+            <!-- Form Buttons -->
+            <div class="buttons">
+              
+              <input type="submit" class="button" value="Update Session" />
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->          
+        
+
+
+
+
+
+
+
+
+
+
+          </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+
+        <!-- End Container -->
+      
+
+ {% endblock %}
+
+
+<!--
     <h1>
         Edit Session
     </h1>
@@ -11,7 +116,7 @@
               <legend>Edit Session</legend>
           <table style = "width:100%">
           <th>First Name</th>  
-          <!--<label for="firstname">First Name</label>-->
+          <label for="firstname">First Name</label>--><!--
           <input type="text" name="firstname" value = "{{session.firstname}}">
           <th>Last Name</th>
           <label for="lastname">Last Name</label>
@@ -35,23 +140,23 @@
           <label for="file">Session Presentation <a href = "{{'/serve/%s' % session.blob_store_key.key()}}">
            {{session.filename}}</a></label>
            {% endif %}
-          <!--<input type="file" name="file">-->
-          <!--File input icon-->
+          <!<input type="file" name="file">
+          File input icon
           <div class="image-upload">
             <label for="file-input">
               <img src="/img/open-file-icon.png" width="30" height="30"/>
             </label>
-<!--
+
               <input id="file-input" type="file" name="file"/>
             </div>
 
           <input type="image" src="/img/open-file-icon.png" name="file" alt="File" width="30" height="30"/>
-          <input type="hidden" name="session_key" value={{session_key}}>-->
+          <input type="hidden" name="session_key" value={{session_key}}>
           <input type="image" src="/img/save-as.png" name="submit" alt="Submit" width="30" height="30"/>
-          <!--<input type="submit" value="Update Session">-->
+          <input type="submit" value="Update Session">
         </fieldset>
         </form>
         </div>
         
 
-    {% endblock %}
+

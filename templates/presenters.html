@@ -33,7 +33,7 @@
               <tr>
                 <th width = "300">Session Name </th>
                 <th width = "300">Presentation</th>
-                <th width = "100">Date</th>
+                <th width = "100">Session Date</th>
 
                 
                 <th>Upload</th>
@@ -46,7 +46,7 @@
                 {% if session.blob_store_key == None %}
                     <td>Not Available</td>
                 {% else %}
-                    <td><a href = "{{'/serve/%s' % session.blob_store_key.key()}}">DL</a></td>
+                    <td><a href = "{{'/serve/%s' % session.blob_store_key.key()}}">Download</a></td>
                 {% endif %}
                     <td>{{session.date}}</td>
                     <td><label>Presentation Upload<span></span></label>

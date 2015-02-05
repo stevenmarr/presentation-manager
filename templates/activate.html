@@ -1,18 +1,79 @@
 {% extends "main.html" %}
-
-{% block title %}Register a new user{% endblock %}
-
 {% block maincontent %}
+        <div id="navigation">
+      
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
 
-<h1>Activate Account</h1>
-<form action="/activate" method="POST">
-  <label for="email">Email address</label>
-  <input type="text" name="email" />
-  <label for="password">Password</label>
-  <input type="password" name="password" />
-  <label for="verify">Verify Password</label>
-  <input type="password" name="verify" />
-  <input type="submit" value="Create user" />
-</form>
+<!-- Container -->
+<div id="container">
+  <div class="shell">     
 
+  <!-- Message Error -->
+  {% if failed %}
+		<div class="msg msg-error">
+			<p><strong>{{ message }}</strong></p>
+			
+		</div>
+		<!-- End Message Error -->
+   {% endif %}
+    <!-- Content -->
+      <div id="content">
+      <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Activate Account</h2>
+            
+          </div>
+
+          <!-- End Box Head --> 
+          <!-- Form -->
+            <div class="form">
+            <form action="/activate" method="POST">
+                <p>
+                  <span class="req"></span>
+                  <label>Email <span></span></label>
+                  <input type="email" name="email"  class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Password<span></span></label>
+                  <input type="password" name="password"  class="field size1"/>
+                </p>  
+                <p>
+                  <span class="req"></span>
+                  <label>Password<span></span></label>
+                  <input type="password" name="verify"  class="field size1"/>
+                </p>  
+                
+             
+            </div>
+            <!-- End Form -->
+            
+            <!-- Form Buttons -->
+            <div class="buttons">
+              
+              <input type="submit" class="button" value="Activate" />
+              <a href="/forgot">Forgot password</a>
+            </form> 
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->          
+
+      	</div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+          
 {% endblock %}
+

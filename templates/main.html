@@ -19,12 +19,21 @@
         <a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
         <span>|</span>
         <a href="/logout">Log out</a>
+          {% if user.account_type == "admin" %}
+          <span>|</span>
+          <a href="/admin">Admin</a>
+          {% else %}
+          <span>|</span>
+          <a href="/default">Home</a>
+          {% endif %}
         {% else %}
         Welcome
         <span>|</span>
         <a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
         <span>|</span>
         <a href="/login">Log in</a>
+        <span>|</span>
+        <a href="/activate">Activate Account</a>
         {% endif %}
       </div>
     </div>
