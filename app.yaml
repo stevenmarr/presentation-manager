@@ -6,7 +6,39 @@ threadsafe: yes
 
 handlers:
 
+- url: /serve/.*
+  script: serve_presentations.app
+  secure: always
 
+- url: /delete/.*
+  script: serve_presentations.app
+  secure: always
+
+- url: /upload
+  script: serve_presentations.app
+  secure: always
+
+- url: /default
+  script: serve_presentations.app
+  secure: always
+
+
+- url: /_ah/upload/.*
+  script: presentations.app
+  secure: always
+
+- url: /send_emails.*
+  script: messages.app
+  secure: always
+
+- url: /dropbox.*
+  script: google_to_dropbox.app
+  secure: always
+
+- url: /admin/update_dropbox.*
+  script: google_to_dropbox.app
+- url: /js
+  static_dir: statics/js
 - url: /css
   static_dir: statics/css
 
@@ -25,12 +57,7 @@ handlers:
   script: presentations.app
   secure: always
 
-- url: /serve/.*
-  script: presentations.app
-  secure: always
-- url: /_ah.*
-  script: presentations.app
-  secure: always
+
 
 - url: .*
   script: main.app
