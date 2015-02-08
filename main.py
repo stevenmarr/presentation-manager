@@ -9,7 +9,7 @@ import logging
 import os.path
 import webapp2
 import models
-
+import email_messages
 from webapp2_extras import auth
 from webapp2_extras import sessions, jinja2
 from webapp2_extras import users
@@ -17,18 +17,7 @@ from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
 from secrets import SECRET_KEY
 from models import SessionData
-
-def send_email(to, subject, msg):
-    message = mail.EmailMessage(sender = "Presentation Mgr Support <marr.stevenmarr@gmail.com>",
-                                to = to,
-
-                                subject=subject,
-                                html = msg)
-    if message.is_initialized():
-        message.send()
-        return True
-    else:
-        return False
+from constants import SENDER
 
 def user_required(handler):
   """
@@ -52,7 +41,6 @@ def admin_required(handler):
   def check_login(self, *args, **kwargs):
     auth = self.auth
     if auth.get_user_by_session():
-        logging.info("Account type is %s" % auth.get_user_by_session()['account_type'] )
         if auth.get_user_by_session()['account_type'] == 'admin':
             return handler(self, *args, **kwargs)
         else: self.redirect('/login')
@@ -79,8 +67,6 @@ def validate(name, type = 'string'):
 
 def check_csv(csv):
     return csv
-
-
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -123,7 +109,7 @@ class BaseHandler(webapp2.RequestHandler):
       """Shortcut to access the current session."""
       return self.session_store.get_session(backend="datastore")
 
-  def render_template(self, view_filename, params=None):
+  def render_template(self, view_filename, params=None):#dict method
     if not params:
       params = {}
     user = self.user_info
@@ -135,7 +121,7 @@ class BaseHandler(webapp2.RequestHandler):
   def jinja2(self):
     return jinja2.get_jinja2(factory=jinja2_factory, app=self.app)
 
-  def render_response(self, _template, **context):
+  def render_response(self, _template, **context):#jinja
     ctx = {'user': self.user_info}
     ctx.update(context)
     rv = self.jinja2.render_template(_template, **ctx)
@@ -166,95 +152,96 @@ class MainHandler(BaseHandler):
   def get(self):
     self.render_template('home.html')
 
-def add_users(user_id, account_type): #deprecated
-    user = models.User()
-    unique_properties = ['email']
-    session, user = user.create_user(user_id,
-                                     unique_properties,
-                                     email = user_id,
-                                     account_type = account_type,
-                                     firstname='Test',
-                                     lastname='Test',
-                                     verified=False)
-    return session, user
-
 class AccountActivateHandler(BaseHandler):
   def get(self):
     self.render_template('activate.html')
 
   def post(self):
-    email = self.request.get('email')
+    email = self.request.get('email').lower()
     password = self.request.get('password')
     password_verify = self.request.get('verify')
 
     if password != password_verify:
-        self.display_message('Passwords do not match, please try again<a href="/activate">activate</a>')
+        self.render_response('activate.html',
+                              failed = True,
+                              message = 'Passwords do not match, please try again.')
         return
     user = self.user_model.get_by_auth_id(email)
     if user.verified == True:
-        self.display_message('That account is already activated, please <a href="/login">login</a>\
-        to contiue')
-    #logging.info('Email is %s' % email)
-    #logging.info('User is %s' % user)
+
+        self.render_response('login.html',
+                              failed = True,
+                              message = 'That account is already activated, please login below')
+        return
     if user:
-        #logging.info('User is %s' % user)
-        #logging.info('Password is %s' % password)
         user.set_password(password)
         user.put()
         time.sleep(.25)
         user_id = user.get_id()
         token = self.user_model.create_signup_token(user_id)
-        verification_url = self.uri_for('verification', type='v', user_id=user_id,
-                                        signup_token=token, _full=True)
-        #msg = 'Send an email to user in order to verify their address. \
-        #       They will be able to do so by visiting <a href="{url}">{url}</a>'
-        subject = "Please verify your account"
-        msg = 'Thank you for activating your account, we look forward to recieving. \
-               your presentations.  To complete the process please activate your account\
-               by clicking on the following link <a href="{url}">{url}</a>'
-        body = msg.format(url=verification_url)
-        success = send_email(user.email_address, subject, body)
-        logging.info(body)
-        if success:
-            self.display_message('An email containing verification information has been sent.<a href=\"/login\">login</a>')
-        else:
-            self.display_message(msg.format(url=verification_url))
-    else:
-        self.display_message('That email address does not match an entry in our records<a href="/help">help</a>')
+        verification_url = self.uri_for('verification', 
+                                        type =          'v', 
+                                        user_id =       user_id,
+                                        signup_token =  token,
+                                        _full =         True)
+        subject = email_messages.account_verification[0]
+        name = user.firstname+' '+user.lastname
+        body = email_messages.account_verification[1].format(url = verification_url, name = name)
+        mail.send_mail( sender =    SENDER,
+                    to =        email,
+                    subject =   subject,
+                    body =      body)
+        self.display_message('An email containing verification information has been sent.')
         return
-
+    else:
+        self.render_response('activate.html',
+                              failed = True,
+                              message = 'That email address does not match an entry in our records, please try again.')
+        return
+   
 class ForgotPasswordHandler(BaseHandler):
   def get(self):
-    self._serve_page()
-
+    #self._serve_page()
+    self.render_response('forgot.html')
   def post(self):
-    username = self.request.get('username')
+    email = self.request.get('email').lower()
 
-    user = self.user_model.get_by_auth_id(username)
+    user = self.user_model.get_by_auth_id(email)
     if not user:
-
-      self._serve_page(not_found=True)
+      self.render_response('forgot.html',
+                              failed = True,
+                              message = 'That email address does not match an entry in our records, please try again.')
       return
-
     user_id = user.get_id()
     token = self.user_model.create_signup_token(user_id)
-
-    verification_url = self.uri_for('verification', type='p', user_id=user_id,
-      signup_token=token, _full=True)
-
-    msg = 'Send an email to user in order to reset their password. \
-          They will be able to do so by visiting <a href="{url}">{url}</a>'
-
-    self.display_message(msg.format(url=verification_url))
-
-  def _serve_page(self, not_found=False):
-    username = self.request.get('username')
-    params = {
-      'username': username,
-      'not_found': not_found
-    }
-    self.render_template('forgot.html', params)
-
+    # Generate email message
+    verification_url = self.uri_for('verification', 
+                                    type =          'p', 
+                                    user_id =       user_id,
+                                    signup_token =  token, 
+                                    _full =         True)
+    subject = email_messages.password_reset[0]
+    name = user.firstname+' '+user.lastname
+    body = email_messages.password_reset[1].format(url = verification_url, name = name)
+    mail.send_mail( sender =    SENDER,
+                    to =        email,
+                    subject =   subject,
+                    body =      body)
+    self.display_message('An email containing password reset information has been sent.')
+    return
+    #self.display_message(msg.format(url=verification_url))
+    #send email
+    #subject = message.password_reset[0]
+    #body = message.password_reset[1].format(url=verification_url)
+    #success = send_email(user.email_address, subject, body)
+  
+  #def _serve_page(self, not_found=False):
+  #  email = self.request.get('email').lower()
+  #  params = {
+  #    'email': email,
+  #    'not_found': not_found
+  #  }
+   # self.render_template('forgot.html', params)
 
 class VerificationHandler(BaseHandler):
   def get(self, *args, **kwargs):
@@ -325,7 +312,7 @@ class LoginHandler(BaseHandler):
     self._serve_page()
 
   def post(self):
-    email = self.request.get('email')
+    email = self.request.get('email').lower()
     user = self.user_model.get_by_auth_id(email)
     if user == None:
         self._serve_page(True, "Invalid login please try again")
@@ -352,7 +339,7 @@ class LoginHandler(BaseHandler):
           self._serve_page(True)
 
   def _serve_page(self, failed=False, message = ""):
-    email = self.request.get('email')
+    email = self.request.get('email').lower()
     params = {
       'email': email,
       'failed': failed,
@@ -365,13 +352,7 @@ class LogoutHandler(BaseHandler):
     self.auth.unset_session()
     self.redirect(self.uri_for('home'))
 
-class UserDefaultHandler(BaseHandler):
-  @user_required
-  def get(self):
-    logging.info(self.user.email_address)
-    sessions = db.GqlQuery("SELECT * FROM SessionData WHERE email = '%s'" % self.user.email_address)
-    upload_url = blobstore.create_upload_url('/upload_presentation')
-    self.render_response('presenters.html', sessions = sessions, upload_url = upload_url)
+
 
 config = {
   'webapp2_extras.auth': {
@@ -393,7 +374,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/login',         LoginHandler,           name='login'),
     webapp2.Route('/logout',        LogoutHandler,          name='logout'),
     webapp2.Route('/forgot',          ForgotPasswordHandler,  name='forgot'),
-    webapp2.Route('/default', UserDefaultHandler,   name='default')
+    
 ], debug=True, config=config)
 
 logging.getLogger().setLevel(logging.DEBUG)
