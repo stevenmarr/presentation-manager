@@ -6,7 +6,7 @@
           <li><a href="/admin" ><span>Administration</span></a></li>
           <li><a href="/admin/manage_sessions" ><span>Manage Sessions</span></a></li>
           <li><a href="/admin/manage_users" class="active"><span>Manage Users</span></a></li>
-          <li><a href="/admin/update_dropbox"><span>Drop Box Utilities</span></a></li>
+          <li><a href="/dropbox"><span>Drop Box Utilities</span></a></li>
       </ul>
        </div>
 <!-- End Main Nav -->
@@ -17,6 +17,20 @@
 <!-- Container -->
 <div id="container" >
   <div class="shell"> 
+    <!-- Message OK -->   
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->   
+     <!-- Message Error -->
+    {% if failed %}
+    <div class="msg msg-error">
+      <p><strong>{{ message }}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message Error -->
     <br />
     <!-- Main -->
     <div id="main">
@@ -34,14 +48,15 @@
           <!-- End Box Head --> 
         <!-- Table -->
           <div class="table">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
               <tr>
                 <th width>Firstname </th>
                 <th width >Lastname</th>
                 <th width>Email</th>
-                <th width>Account Activated</th>
-                <th></th>
-                <th></th>
+
+                <th class="sorttable_nosort ac" >Account Activated</th>
+                <th class = "ac">Delete User</th>
+                
                 
               </tr>
             {% for u in basic_users %}
@@ -49,9 +64,13 @@
                 <td>{{u.firstname}} </td>
                 <td>{{u.lastname}}</td>
                 <td>{{u.email_address}}</td>
-                <td>{{u.verified}}</td>
+                {% if u.verified == True %}
+                  <td class="ac"><img src="/img/thumb-up.png" height="20" width="20" alt="True" title = "True"></td>
+                {% else %}
+                  <td class="ac"><img src="/img/thumb-down.png" height="20" width="20" alt="False" title = "False"></td>
+                {% endif %}
                 <form action="/admin/delete_user_account" method="POST">
-                  <td><input type="hidden" name="user_id" value="{{u.email_address}}"/>
+                  <td class = "ac"><input type="hidden" name="user_id" value="{{u.email_address}}"/>
                   <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
                 </form>
                 </tr>
@@ -94,7 +113,7 @@
             
             <!-- Form Buttons -->
             <div class="buttons">
-              
+              <label></label><input type="checkbox" name="email_user">Email presenter with account activation information</label><br>
               <input type="submit" class="button" value="Add User" />
             </form>
             </div>
@@ -102,18 +121,7 @@
           </form>
         </div>
         <!-- End Box -->          
-         
-
-
-
-
-
-
-
-
-
-
-          </div>
+        </div>
         <!-- End content -->
               <div class="cl">&nbsp;</div>      
               </div>

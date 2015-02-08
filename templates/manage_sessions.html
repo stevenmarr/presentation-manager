@@ -6,7 +6,7 @@
           <li><a href="/admin" ><span>Administration</span></a></li>
           <li><a href="/admin/manage_sessions" class="active"><span>Manage Sessions</span></a></li>
           <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
-          <li><a href="/admin/update_dropbox"><span>Drop Box Utilities</span></a></li>
+          <li><a href="/dropbox"><span>Drop Box Utilities</span></a></li>
       </ul>
        </div>
 <!-- End Main Nav -->
@@ -34,37 +34,41 @@
           <!-- End Box Head --> 
         <!-- Table -->
           <div class="table">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
               <tr>
-                <th width>Session and Room </th>
+                <th width="450px">Session</th>
+                <th width="125x">Room </th>
                 <th width >Speaker</th>
-                <th width>Date</th>
-                <th width>Presentation</th>
-                <th width class="ac">Control</th>
+                <th width = "80px" class="ac">Session Date</th>
+                <th width ="22px" class="ac">File</th>
+                <th width ="22px" class="ac">Edit</th>
+                <th width ="22px" class="ac">Delete</th>
                 <th></th>
               </tr>
             {% for session in sessions %}
               <tr>
-                <td>{{session.session_name}}{{session.session_room}}</td>
-                
+                <td>{{session.session_name}}</td>
+                <td>{{session.session_room}}</td>
                 <td>{{session.firstname}} {{session.lastname}}</td>
-                <td>{{session.session_date}}</td>
+                <td class="ac">{{session.session_date}}</td>
                 <!-- Presentation URL -->
                 {% if session.blob_store_key == None %}
-                    <td>Not Available</td>
+                    <td class="ac">--</td>
                 {% else %}
-                    <td><a href = "{{'/serve/%s' % session.blob_store_key.key()}}">DL</a></td>
+                    <td class="ac" ><a href = "{{'/serve/%s' % session.blob_store_key.key()}}"><img src = "/img/open-file-icon.png" width="20" height ="20" alt = "Open file"></a></td>
                 {% endif %}
-                <!-- Session Deletes -->
-                
-                  <form action="/admin/delete_session" method="POST">
-                    <td><input type="hidden" name="session_key" value="{{session.key()}}">
-                    <input type="image" src="/img/Delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
                   </form>
                 <!-- Session Edits -->
                   <form action="/admin/edit_session" method="POST">
-                    <td><input type="hidden" name="session_key" value={{session.key()}}>
+                    <td class="ac"><input type="hidden" name="session_key" value={{session.key()}}>
                     <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                  </form>
+
+                <!-- Session Deletes -->
+                
+                  <form action="/admin/delete_session" method="POST">
+                    <td class="ac"><input type="hidden" name="session_key" value="{{session.key()}}">
+                    <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
                   </form>
                 </tr>
               {% endfor %}
@@ -111,7 +115,12 @@
                   <input type="text" name="session_room" value = "{{session_room}}" class="field size1"/>
                 </p>  
                 <p class="inline-field">
-                  <label>Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Time</label>
+                  <label>Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Time
+                  </label>
+
                   <input type="date" name="session_date" value = "{{session_date}}" class="field size2"/>
                   <input type="time" name="session_time" value = "{{session_time}}" class="field size2"/>   
                 </p>  

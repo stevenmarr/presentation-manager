@@ -22,7 +22,7 @@ class AddAdminAccountHandler(BaseHandler):
         email = self.request.get('email')
         firstname = self.request.get('name')
         lastname = self.request.get('lastname')
-        unique_properties = ['email_address']
+        unique_properties = []
         session, user = self.user_model.create_user(email,
                                                     unique_properties,
                                                     email_address=  email,

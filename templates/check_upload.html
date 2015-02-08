@@ -34,7 +34,7 @@
           <!-- End Box Head --> 
           <!-- Table -->
           <div class="table">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
               <tr>
                 <th width>Session </th>
                 <th width>Room</th>
@@ -55,14 +55,17 @@
               {% endfor %}
               </table>
               </div>
-              <form action="/admin/delete_upload" method="POST">
+              <div class="buttons">
+              <form class="form" action="/admin/commit_upload" method="POST">
+             <label></label><input type="checkbox" name="email_user">Email presenters with account activation information</label><br>
+             <input type="hidden" name="blob_key" value={{blob_key}}>
+             <input type="submit" class = "button" value="Commit Upload" >
+            </form>
+              <form class="form" action="/admin/delete_upload" method="POST">
               <input type="hidden" name="blob_key" value={{blob_key}}>
              <input type="submit" class = "button" value="Delete Upload" >
               </form>
-              <form action="/admin/commit_upload" method="POST">
-             <input type="hidden" name="blob_key" value={{blob_key}}>
-             <input type="submit" value="Commit Upload" >
-            </form>
+              </div>
         </div>
        </div> 
           <div class="cl">&nbsp;</div>      

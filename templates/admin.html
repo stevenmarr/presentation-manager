@@ -5,7 +5,7 @@
           <li><a href="/admin" class="active"><span>Administration</span></a></li>
           <li><a href="/admin/manage_sessions"><span>Manage Sessions</span></a></li>
           <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
-          <li><a href="/admin/update_dropbo"><span>Drop Box Utilities</span></a></li>
+          <li><a href="/dropbox"><span>Drop Box Utilities</span></a></li>
       </ul>
        </div>
 <!-- End Main Nav -->
@@ -18,14 +18,105 @@
   <div class="shell">     
 
   <!-- Message OK -->   
+    {% if success %}
     <div class="msg msg-ok">
-      <p><strong>Welcome Administrator</strong></p>
-      
+      <p><strong>{{ message}}</strong></p>
     </div>
-
+    {% endif %}
     <!-- End Message OK -->   
+     <!-- Message Error -->
+    {% if failed %}
+    <div class="msg msg-error">
+      <p><strong>{{ message }}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message Error -->
     <!-- Content -->
       <div id="content">
+        <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">User Events</h2>
+            
+          </div>
+
+          <!-- End Box Head --> 
+        <!-- Table -->
+          <div class="log-table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <th width="800x">Event </th>
+                <th width >Created Time</th>
+                <th></th>
+              </tr>
+            {% for event in user_events %}
+              <tr>
+                <td>{{event.event}}</td>
+                <td>{{event.time_stamp}}</td>
+              </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
+             <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Session Events</h2>
+            
+          </div>
+
+          <!-- End Box Head --> 
+        <!-- Table -->
+          <div class="log-table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
+              <tr>
+                <th width="800x">Event </th>
+                <th width >Created Time</th>
+                <th></th>
+              </tr>
+            {% for event in session_events %}
+              <tr>
+                <td>{{event.event}}</td>
+                <td>{{event.time_stamp}}</td>
+              </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
+             <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Presentation Events</h2>
+            
+          </div>
+
+          <!-- End Box Head --> 
+        <!-- Table -->
+          <div class= "log-table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
+              <tr>
+                <th width="800x">Event </th>
+                <th width >Created Time</th>
+                <th></th>
+              </tr>
+            {% for event in presentation_events %}
+              <tr>
+                <td>{{event.event}}</td>
+                <td>{{event.time_stamp}}</td>
+              </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
       </div>   
     </div>
   </div>

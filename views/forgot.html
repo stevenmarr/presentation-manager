@@ -11,8 +11,8 @@
 {% endif %} 
 
 <form class="form" action= "/forgot" method="POST">
-	<input type="text" value="{{ username }}" name="username"/>
-	<input type="submit" value="Send password reset link"/>
+	<input type="text" value="{{ username }}" name="email"/>
+	<input type="submit" class = "button" value="Send password reset link"/>
 </form>
 
 {% endblock %}

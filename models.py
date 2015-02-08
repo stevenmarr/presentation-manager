@@ -7,6 +7,8 @@ from webapp2_extras import security
 
 class User(webapp2_extras.appengine.auth.models.User):
     email_address = ndb.StringProperty()
+    firstname = ndb.StringProperty()
+    lastname = ndb.StringProperty()
     account_type = ndb.StringProperty(required = True, default = "user", choices = ('user', 'admin'))
     password = ndb.StringProperty()
     def set_password(self, raw_password):
@@ -49,7 +51,6 @@ class SessionData(db.Model):
     firstname =                     db.StringProperty(required = True)
     lastname =                      db.StringProperty(required = True)
     email =                         db.EmailProperty(required = True)
-    username =                      db.StringProperty()
     session_name =                  db.StringProperty(required = False)
     session_room =                  db.StringProperty(indexed = True)
     session_date =                  db.StringProperty()
@@ -59,14 +60,10 @@ class SessionData(db.Model):
     presentation_uploaded_to_db =   db.BooleanProperty(default = False)
     presentation_db_path =          db.CategoryProperty(indexed = False, default = None)
     presentation_db_size =          db.StringProperty(default = None)
-    user_type =                     db.StringProperty(required = True, default = "PRESENTER")
 
-
-"""
-class OldUser(db.Model):
-    firstname = db.StringProperty(required = True, indexed = True)
-    lastname = db.StringProperty(required = True)
-    password = db.StringProperty(indexed = False, default = None)
-    email = db.EmailProperty(required = True)
-    user_type = db.StringProperty(required = True, default = "PRESENTER", choices = ('GOD', 'SUPER_USER', 'USER', 'PRESENTER')) #types GOD, SUPER_USER, USER, PRESENTER
-"""
+class AppEventData(db.Model):
+    event = db.StringProperty(required = True)
+    event_type = db.StringProperty(default = 'system')
+    time_stamp =  db.DateTimeProperty(auto_now_add = True, indexed = True)
+    user = db.StringProperty(required = True)
+    

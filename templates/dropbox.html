@@ -1,0 +1,78 @@
+{% extends "main.html" %}
+{% block maincontent %}
+        <div id="navigation">
+      <ul>
+          <li><a href="/admin" ><span>Administration</span></a></li>
+          <li><a href="/admin/manage_sessions"><span>Manage Sessions</span></a></li>
+          <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
+          <li><a href="/dropbox" class="active"><span>Drop Box Utilities</span></a></li>
+      </ul>
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container">
+  <div class="shell">     
+
+  <!-- Message OK -->   
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->   
+     <!-- Message Error -->
+    {% if failed %}
+    <div class="msg msg-error">
+      <p><strong>{{ message }}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message Error -->
+    
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+    <!-- Content -->
+      <div id="content">
+          <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Dropbox Utilities</h2>
+            
+          </div>
+        <form action="/dropbox/build_upload_dropbox/" method="POST">
+                    
+                    <input type="image" src="/img/dropbox-icon.jpg" name="submit" alt="Submit" width="40" height="40"/><strong>Copy presentations to DropBox</strong>
+                  </form>
+         <form action="/dropbox/re_initialize_upload_status/" method="POST">
+                    
+                    <input type="image" src="/img/reset.png" name="submit" alt="Submit" width="40" height="40"/><strong>Reset DropBox Flag in SessionData (reset uploads)</strong>
+                  </form>         
+      </div>
+        <!-- End Box -->          
+
+
+
+
+
+
+
+
+
+
+          </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>      
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+
+        <!-- End Container -->
+          
+{% endblock %}
