@@ -1,0 +1,145 @@
+{% extends "main.html" %}
+{% block maincontent %}
+
+
+
+</div>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#warning1').hide();
+    $('#warning2').hide();
+    $('#icon').hide()
+    setTimeout(function(){
+      $('#warning2').show()}, 5400000)
+    $("#123").click(function(){
+    //$("#123").submit(function(){
+      
+      $('#icon').fadeIn();
+      $('#warning2').fadeIn();});});
+  
+</script>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container" >
+  <div class="shell">
+       <!-- Message OK -->
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->
+     <!-- Message Error -->
+    <div id = "warning1" class="msg msg-error">
+    
+      <p><strong>Upload in progress do not navigate away from this page</strong></p>
+    
+    </div>
+    <div id = "warning2">
+    <div class="msg msg-error">
+      <p><strong>Upload hanlders expire after 10 minutes, please reload the page to post your presentation</strong></p>
+    </div>
+    </div>
+    <!-- End Message Error -->
+
+    <br />
+
+    <!-- Main -->
+    <div id="main">
+    <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          
+
+          <!-- Box -->
+          <div class="box">
+
+            <!-- Box Head -->
+            <div class="box-head">
+              <h2 class="left">{{user.firstname}}'s Presentations</h2>
+            </div>
+            <!-- End Box Head -->
+
+            <!-- Table -->
+            <div class="presentation-table">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+
+                <tr>
+                  <th width="30%">Session</th>
+                  <th width = "20%" class="ac">Date and Time</th>
+                  <th width = "15%" class="ac">Filename</th>
+                  <th width ="5%" class="ac">View Presentation</th>
+                  <th width ="5%" class="ac">Delete Presentation</th>
+                  <th width ="5%" class="ac">Upload Presentation</th>
+                  <th></th>
+                </tr>
+                {% for session in sessions %}
+                <tr height = "75px">
+                  <td>{{session.name}}</td>
+                  <td>{{session.date_time}}</td>
+                   {% if session.filename %}
+                  <td class="ac">{{session.filename}}</td>
+                    {% else %}
+                    <td class="ac">--</td>
+                  </td>
+                {% endif %}
+                <!-- Link to current presentation if it exists -->
+                {% if session.blob_store_key == None %}
+                    <td class="ac">--</td>
+                {% else %}
+                  <td class="ac" >
+                    <a href = "{{'/serve/%s' % session.blob_store_key.key()}}">
+                      <img src = "/img/open-file-icon.png" width="20" height ="20" alt = "Open file"></a>
+
+                  </td>
+                {% endif %}
+                <!--****************************-->
+                <!-- Delete presentation -->
+                {% if session.blob_store_key == None %}
+                    <td class="ac">--</td>
+                {% else %}
+                    <td class="ac">
+                      <form action="{{'/delete/%s' % session.blob_store_key.key()}}" method="POST">
+                        <input type="hidden" name="session_key" value="{{session.key()}}">
+                        <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/>
+                      </form>
+                    </td>
+                {% endif %}
+                <!--****************************-->
+                <!-- Upload presentation -->
+                 <td class="ac">
+                      <form id="123" action="{{upload_urls[session.name]}}" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="session_key" value="{{session.key()}}">
+                        <input type="hidden" name="blob_store_key" value="{{session.blob_store_key}}">
+                        <input type="file" name="file"  class = "button" value="upload file"/>
+
+                 </td>
+                 <td class="ac">
+                        <div id = "upload-icon">
+                            
+                            <input id="123" type="image" src="/img/upload-icon.png"  name="submit" alt="Submit" width="20" height="20"/>
+                          
+                        </div>
+                        <div id = "icon">
+                          <img src="/img/small-loading.gif" width="20" height="20"/>
+                        </div>
+                      </form>
+                </td>
+                {% endfor %}
+                </tr>
+             </table>
+
+                </div>
+                </div>
+              <!-- End content -->
+              <div class="cl">&nbsp;</div>
+              </div>
+          <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+
+        <!-- End Container -->
+      {% endblock %}

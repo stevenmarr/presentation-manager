@@ -1,0 +1,143 @@
+{% extends "main.html" %}
+{% block maincontent %}
+<!-- Main Nav -->
+  <div id="navigation">
+      <ul>
+        <li><a href="/admin/manage_sessions"><span>Manage Sessions</span></a></li>
+        <li><a href="/admin/manage_users" class="active"><span>Manage Users</span></a></li>
+        <li><a href="/utilities"><span>Utilities</span></a></li>
+        <li><a href="/admin/conference_data"><span>Conference Data</span></a></li>
+        <li><a href="/admin/logs"><span>Logs</span></a></li>
+      </ul>
+       </div>
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container" >
+  <div class="shell">
+    <!-- Message OK -->
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->
+     <!-- Message Error -->
+    {% if failed %}
+    <div class="msg msg-error">
+      <p><strong>{{ message }}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message Error -->
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Current Users</h2>
+
+          </div>
+
+          <!-- End Box Head -->
+        <!-- Table -->
+          <div class="table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
+              <tr>
+                <th width>Firstname </th>
+                <th width >Lastname</th>
+                <th width>Email</th>
+
+                <th class="sorttable_nosort ac" >Account Activated</th>
+                <th class = "ac">Delete User</th>
+
+
+              </tr>
+            {% for user in users %}
+              <tr>
+                <td>{{user.firstname}} </td>
+                <td>{{user.lastname}}</td>
+                <td>{{user.email}}</td>
+                {% if user.verified == True %}
+                  <td class="ac"><img src="/img/thumb-up.png" height="20" width="20" alt="True" title = "True"></td>
+                {% else %}
+                  <td class="ac"><img src="/img/thumb-down.png" height="20" width="20" alt="False" title = "False"></td>
+                {% endif %}
+                <form action="/admin/delete_user_account" method="POST">
+                  <td class = "ac"><input type="hidden" name="user_id" value="{{user.email}}"/>
+                  <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                </form>
+                </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Add New User</h2>
+          </div>
+          <!-- End Box Head -->
+
+
+            <!-- Form -->
+            <div class="form">
+              <form action="/admin/add_user_account" method="POST">
+                <p>
+                  <div>{{ form.firstname.label }} {{ form.firstname(class="field size1") }}</div>
+                  {% if form.firstname.errors %}
+                    <ul class="errors">{% for error in form.firstname.errors %}{{ error }}{% endfor %}</ul>
+                  {% endif %}
+                </p>
+                <p>
+                  <div>{{ form.lastname.label }} {{ form.lastname(class="field size1") }}</div>
+                  {% if form.lastname.errors %}
+                    <ul class="errors">{% for error in form.lastname.errors %}{{ error }}{% endfor %}</ul>
+                  {% endif %}
+                </p>
+                <p>
+                  <div>{{ form.email.label }} {{ form.email(class="field size1") }}</div>
+                  {% if form.email.errors %}
+                    <ul class="errors">{% for error in form.email.errors %}{{ error }}{% endfor %}</ul>
+                  {% endif %}
+                </p>
+                
+                  
+                
+            </div>
+            <!-- End Form -->
+
+            <!-- Form Buttons -->
+            
+              <div class="buttons">
+                    {{ form.email_user.label }} 
+                    {{ form.email_user(class="checkbox") }}
+                    <br />
+              <input type="submit" class="button" value="Add User" />
+            </form>
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->
+        </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+          {% endblock %}
+
+        <!-- End Container -->

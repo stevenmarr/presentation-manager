@@ -1,0 +1,24 @@
+{% extends "main.html" %}
+{% block maincontent %}
+<div class ="col-md-12">
+	<h1>View Conference Speakers</h1>
+</div>
+<div class = "row-fluid">
+	<div class = "col-xs-2"><label class = "title">First Name</label>		</div>
+	<div class = "col-xs-2"><label class = "title">Last Name</label>		</div>
+	<div class = "col-xs-5"><label class = "title">Session Name</label>	</div>
+	<div class = "col-xs-2"><label class = "title">Room</label>					</div>
+	<div class = "col-xs-1"><label class = "title">Presentation</label>		</div>
+	{% for db_entry in db_entries %}
+		<div class = "col-xs-2"><label>{{db_entry.presenter_firstname}}</label></div>
+		<div class = "col-xs-2"><label>{{db_entry.presenter_lastname}}</label></div>
+		<div class = "col-xs-5"><label>{{db_entry.session_name}}</label></div>
+		<div class = "col-xs-2"><label>{{db_entry.room}}</label></div>
+		{% if db_entry.blob_store_key == None %}
+			<div class = "col-xs-1"><label >Not Available</label></div>
+		{% else %}
+				<div class = "col-xs-1"><a href = "/duck{{db_entry.blob_store_key.key()}}">Presentation</a></div>
+		{% endif %}
+	{% endfor %}
+</div>
+{% endblock %}

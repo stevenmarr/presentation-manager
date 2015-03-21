@@ -1,0 +1,131 @@
+{% extends "main.html" %}
+{% block maincontent %}
+<!-- Main Nav -->
+<div id="navigation">
+  <ul>
+    <li><a href="/admin/manage_sessions"><span>Manage Sessions</span></a></li>
+    <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
+    <li><a href="/utilities"><span>Utilities</span></a></li>
+    <li><a href="/admin/conference_data" class="active"><span>Conference Data</span></a></li>
+    <li><a href="/admin/logs"><span>Logs</span></a></li>
+  </ul>
+</div>
+<!-- End Main Nav -->
+</div>
+</div>
+<!-- End Header -->
+<!-- Container -->
+<div id="container" >
+  <div class="shell">
+    <!-- Message OK -->
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->
+    <!-- Message Error -->
+    {% if failed %}
+    <div class="msg msg-error">
+      <p><strong>{{ message }}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message Error -->
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+      <!-- Content -->
+      <div id="content">
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Edit Conference Information</h2>
+          </div>
+          <!-- End Box Head -->
+          <form action="/admin/conference_data" method="POST">
+            <!-- Form -->
+            <div class="form">
+              <p>
+                <div>
+                  {{ form.c_client.label }}  {{ form.c_client(class="field size1")  }} 
+                </div>
+                {% if form.c_client.errors %}
+                  <ul class="errors">{% for error in form.c_client.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>
+                  {{ form.name.label }}  {{ form.name(class="field size1")  }} 
+                </div>
+                {% if form.name.errors %}
+                  <ul class="errors">{% for error in form.name.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>
+                  {{ form.dbox_update(class="checkbox")}}{{form.dbox_update.label}}
+                </div>
+              </p>
+              <p>
+                <div>
+                  {{ form.start.label }}{{ form.start(class="field size1")  }} 
+                </div>
+                {% if form.start.errors %}
+                  <ul class="errors">{% for error in form.start_date.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>
+                  {{ form.end.label }}  {{ form.end(class="field size1")  }} 
+                </div>
+                {% if form.end.errors %}
+                  <ul class="errors">{% for error in form.end.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>
+                  {{ form.account_verification_msg.label }}  {{ form.account_verification_msg(class="field size4")  }} 
+                </div>
+                {% if form.account_verification_msg.errors %}
+                  <ul class="errors">{% for error in form.account_verification_msg.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>
+                  {{ form.password_reset_msg.label }}  {{ form.password_reset_msg(class="field size4")  }} 
+                </div>
+                {% if form.password_reset_msg.errors %}
+                  <ul class="errors">{% for error in form.password_reset_msg.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>
+                  {{ form.new_account_msg.label }}  {{ form.new_account_msg(class="field size4")  }} 
+                </div>
+                {% if form.new_account_msg.errors %}
+                  <ul class="errors">{% for error in form.new_account_msg.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+
+            </div>
+            <!-- Form Buttons -->
+            <div class="buttons">
+              <input type="submit" class="button" value="Update Conference" />
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+          <!-- End Form -->
+        </div>
+        <!-- End Box -->
+      </div>
+      <!-- End content -->
+      <div class="cl">&nbsp;</div>
+    </div>
+    <!-- Main -->
+  </div>
+  <!-- End Shell -->
+</div>
+<!-- End Container -->
+{% endblock %}

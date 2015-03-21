@@ -1,0 +1,134 @@
+{% extends "main.html" %}
+{% block maincontent %}
+<!-- Main Nav -->
+<div id="navigation">
+</div>
+<!-- End Main Nav -->
+</div>
+</div>
+<!-- End Header -->
+<!-- Container -->
+<div id="container" >
+  <div class="shell">
+    <!-- Message OK -->
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->
+    <!-- Message Error -->
+    {% if failed %}
+    <div class="msg msg-error">
+      <p><strong>{{ message }}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message Error -->
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+      <!-- Content -->
+      <div id="content">
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Edit Session</h2>
+          </div>
+          <!-- End Box Head -->
+          <form action="/admin/update_session" method="POST">
+            <!-- Form -->
+            <div class="form">
+                <input type="hidden" name="key" value="{{key}}"/>
+        
+              <p>
+                <div>
+                  {{ form.users.label }}  {{ form.users(class="field size1")  }} 
+                </div>
+                {% if form.users.errors %}
+                  <ul class="errors">{% for error in form.users.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>{{ form.name.label }} {{ form.name(class="field size1") }}</div>
+                {% if form.name.errors %}
+                  <ul class="errors">{% for error in form.name.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>{{ form.room.label }} {{ form.room(class="field size2") }}</div>
+                {% if form.room.errors %}
+                  <ul class="errors">{% for error in form.room.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>{{ form.date.label }} {{ form.date(class="field size2") }}</div>
+                {% if form.date.errors %}
+                  <ul class="errors">{% for error in form.date.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>{{ form.time.label }} {{ form.time(class="field size2") }}</div>
+                {% if form.time.errors %}
+                  <ul class="errors">{% for error in form.time.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+
+            </div>
+            <!-- Form Buttons -->
+            <div class="buttons">
+              <input type="submit" class="button" value="Update Session" />
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+          <!-- End Form -->
+        </div>
+        <!-- End Box -->
+      </div>
+      <!-- End content -->
+      <div class="cl">&nbsp;</div>
+    </div>
+    <!-- Main -->
+  </div>
+  <!-- End Shell -->
+</div>
+<!-- End Container -->
+{% endblock %}
+
+
+              <!--'''<p>
+                <span class="req"></span>
+                <label>Presenter First Name <span>(Required Field)</span></label>
+                <input type="text" name="firstname" value = "{{session.firstname}}" class="field size1"/>
+              </p>
+              <p>
+                <span class="req"></span>
+                <label>Presenter Last Name <span>(Required Field)</span></label>
+                <input type="text" name="lastname" value = "{{session.lastname}}" class="field size1"/>
+              </p>
+              <p>
+                <span class="req"></span>
+                <label>Presenter Email Address <span>(Required Field)</span></label>
+                <input type="email" name="email" value = "{{session.email}}" class="field size1"/>
+              </p>
+              <p>
+                <span class="req"></span>
+                <label>Session Name <span>(Required Field)</span></label>
+                <input type="text" name="name" value = "{{session.name}}" class="field size1"/>
+              </p>
+              <p>
+                <span class="req"></span>
+                <label>Session Room <span></span></label>
+                <input type="text" name="room" value = "{{session.room}}" class="field size1"/>
+              </p>
+              <p class="inline-field">
+                <label>Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Time</label>
+                <input type="date" name="date_time" value = "{{session.date_time}}" class="field size2"/>
+                <input type="time" name="date_time" value = "{{session.date_time}}" class="field size2"/>
+              </p>
+              <p>
+                <input type="hidden" name="session_key" value="{{session_key}}"/>
+                <label>Presentation Upload<span></span></label>
+                <input type="file"  name="file"/>
+              </p>'''-->

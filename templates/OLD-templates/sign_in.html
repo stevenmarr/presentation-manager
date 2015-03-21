@@ -1,0 +1,34 @@
+{% extends "head.html" %}
+{% block content %}
+    <h1>
+        Sign In 
+    </h1>
+    <body>
+    <div>
+        <form method = "post">
+            <br>
+            <label>Email (required)
+              <input type = "text" name = "email" value = {{email}}><label style="color: red">{{error_email}}</label>
+            </label>
+            <br>
+
+                <label>Password
+                    <input type = "password" name = "password" value = {{password_1}}><label style="color: red">{{error_password}}
+                     </label>
+                </label>
+
+            <br>
+
+                <label>Verify Password
+                    <input type = "password" name = "verify" value = {{password_2}}>
+                </label>
+
+            <br>
+
+
+            <br>
+            <input type = "submit">
+        </form>
+    </div>
+  </body>
+    {% endblock %}

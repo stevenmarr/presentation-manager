@@ -1,0 +1,6 @@
+backends:
+- name: db-upload
+  class: B2
+  instances: 1
+  start: utilities.app
+  options: dynamic

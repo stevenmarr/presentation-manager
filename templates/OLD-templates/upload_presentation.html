@@ -1,0 +1,29 @@
+{% extends "head.html" %}
+{% block content %}
+<h1>Upload Presentation</h1>
+  <h2>{{error}}</h2>
+  <body>
+    <form action="{{upload_url}}" method="POST" enctype="multipart/form-data">
+
+    Select Name<select name = "presenter_name">
+      <label>Presenter Name</label>
+      <option>--</option>
+      {% for presenter_name in presenter_data %}
+      <option>{{presenter_name.presenter_lastname}}</option>
+      {% endfor %}
+    </select>
+    <br>
+    Upload Presentation File: <input type="file" name="file"><br>
+    Select Presentation File Type<select name = "presentation_type">
+      <label>Presentation Type</label>
+
+      <option>PowerPoint 11 and above.ppt</option>
+      <option>PowerPoint</option>
+      <option>Keynote</option>
+      <option>Adobe PDF</option>
+    </select><br>
+    <input type="submit" name="submit" value="Submit">
+    </form>
+  </body>
+
+{% endblock %}

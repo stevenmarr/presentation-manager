@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <title>Presentation Manager</title>
+  <script src="/js/jquery-1.11.2.min.js"></script>
+  <!--<script src="/js/sorttable.js"></script>-->
+  
+  
+ <!-- <script src="/js/jquery-1.11.2.min.js"></script>-->
+  <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
+
+
+</head>
+<body>
+<!-- Header -->
+<div id="header">
+  <div class="shell">
+    <!-- Logo + Top Nav -->
+    <div id="top">
+      <h1><a href="/default">Conference Media Manager</a></h1>
+      <div id="top-navigation">
+        {% if user %}
+        Welcome <strong>{{ user.firstname }} | Account type: {{user.account_type}}</strong>
+        <span>|</span>
+        <a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
+        <span>|</span>
+        <a href="/logout">Log out</a>
+          {% if user.account_type == "admin" %}
+          <span>|</span>
+          <a href="/admin">Admin</a>
+          {% else %}
+          <span>|</span>
+          <a href="/default">Home</a>
+          {% endif %}
+        {% else %}
+        Welcome
+        <span>|</span>
+        <a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
+        <span>|</span>
+        <a href="/login">Log in</a>
+        <span>|</span>
+        <a href="/activate">Activate Account</a>
+        {% endif %}
+      </div>
+    </div>
+
+    </div>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container" >
+  <div class="shell"> 
+       <!-- Message OK -->   
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->   
+     <!-- Message Error -->
+    <div id = "warning">
+    <div class="msg msg-error">
+      <p><strong>Upload in progress do not navigate away from this page</strong></p>
+    </div>
+    </div>
+    <!-- End Message Error -->
+
+    <br />
+
+    <!-- Main -->
+    <div id="main">
+    <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          
+          <!-- Box -->
+          <div class="box">
+
+            <!-- Box Head -->
+            <div class="box-head">
+              <h2 class="left">{{user.firstname}}'s Presentations</h2>
+            </div>
+            <!-- End Box Head --> 
+             
+            <!-- Table -->
+            <div class="presentation-table">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                
+                <tr>
+                  <th width="450px">Session Name</th>
+                  <th width = "80px" class="ac">Session Date</th>
+                  <th width = "100px" class="ac">Filename</th>
+                  <th width ="40px" class="ac">View Presentation</th>
+                  <th width ="40px" class="ac">Delete Presentation</th>
+                  <th width ="150px" class="ac">Upload Presentation</th>
+                  <th></th>
+               
+                </tr>
+
+    {% block maincontent %}
+
+    {% endblock %}
+  

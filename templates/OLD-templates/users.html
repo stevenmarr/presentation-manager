@@ -1,0 +1,116 @@
+{% extends "head.html" %}
+{% block content %}
+    <h1>
+        Manage Users
+    </h1>
+
+      <h3>
+        Administrator(s)
+      </h3><hr>
+      <div>
+      {% for super_user in users %}
+      {% if super_user.user_type == 'SUPER_USER'  %}
+        <div class = "col-xs-3"><label>{{super_user.firstname}}</label></div>
+        <div class = "col-xs-3"><label>{{super_user.lastname}}</label></div>
+        <div class = "col-xs-3"><label>{{super_user.email}}</label></div>
+          {% if super_user.user_firstname  %}
+          <div class = "col-xs-3"><a href = "/delete_user/{{super_user.user_email}}">delete</a></div><br><hr>
+          {% else %}
+          <div class = "col-xs-3"></div><br><hr>
+          {% endif %}
+     {% else %}
+     {% endif %}
+
+     {% endfor %}
+   </div>
+
+     <div onClick="openClose('a1')" style="cursor:hand; cursor:pointer"><b>Add Administrator -/+ </b></div>
+     <div id="a1" class="texter">
+       <hr>
+      <form  method = "post">
+        <div class = "col-xs-3">
+          <label>First Name</label>
+          <input type = "textbox" name = "first_name" value = {{first_name}}>
+          <label style="color: red">{{error_email}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <label>Last Name</label>
+          <input type = "textbox" name = "last_name" value = {{last_name}}>
+          <label style="color: red">{{error_email}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <label>Email</label>
+          <input type = "textbox"rows="4" cols="100" name = "email" value = {{email}}>
+          <label style="color: red">{{error_email}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <input type="hidden" name="user_type" value="SUPER_USER">
+        </div>
+
+        <br>
+        <br>
+        <div>
+            <input type = "submit" value = "Add Administrator">
+        </div>
+
+        <br /><br />
+      </div>
+
+
+      </form>
+      <hr>
+      <h3>
+        User(s)
+      </h3>
+
+      {% for user in users %}
+      {% if user.user_type == 'USER'  %}
+      <div class = "col-xs-3"><label>{{user.firstname}}</label></div>
+      <div class = "col-xs-3"><label>{{user.lastname}}</label></div>
+      <div class = "col-xs-3"><label>{{user.email}}</label></div>
+      {% if user.user_firstname  %}
+      <div class = "col-xs-3"><a href = "/delete_user/{{user.user_email}}">delete</a></div><br><hr>
+      {% else %}
+      <div class = "col-xs-3"></div><br><hr>
+      {% endif %}
+
+      {% endif %}
+      {% endfor %}
+
+
+
+
+        <div onClick="openClose('a2')" style="cursor:hand; cursor:pointer"><b>Add User -/+ </b></div>
+        <div id="a2" class="texter">
+          <br>
+      <form  method = "post">
+        <div class = "col-xs-3">
+          <label>First Name</label>
+          <input type = "textbox" name = "first_name" value = {{first_name}}>
+          <label style="color: red">{{error_user_name}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <label>Last Name</label>
+          <input type = "textbox" name = "last_name" value = {{last_name}}>
+          <label style="color: red">{{error_user_name}}</label>
+        </div>
+        <div class = "col-xs-3">
+          <label>Email</label>
+          <input type = "textbox" name = "email" value = {{email}}>
+          <label style="color: red">{{error_email}}</label>
+        </div>
+        <div class = "col-xs-1">
+          <input type="hidden" name="user_type" value="USER">
+        </div>
+
+        <br>
+
+        <div>
+          <br><br>
+          <input type = "submit" value = "Add user">
+        </div>
+      </form>
+      <br /><br />
+    </div>
+    <hr>
+    {% endblock %}

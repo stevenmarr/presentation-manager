@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <meta name=viewport content="width=600, initial-scale=1" />
+  <title>Presentation Manager</title>
+  <script src="/js/jquery-1.11.2.min.js"></script>
+  <script>
+      function autoclick(id) {
+      var a = $(id)[0];
+      var evObj = document.createEvent('MouseEvents');
+      evObj.initMouseEvent('click', true, true, window);
+      a.dispatchEvent(evObj); }
+  </script>
+  <script src="/js/sorttable.js"></script>
+  <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
+
+
+</head>
+<body>
+<!-- Header -->
+<div id="header">
+  <div class="shell">
+    <!-- Logo + Top Nav -->
+    <div id="top">
+      <h1><a href="/default">{{ conference_data.c_client }} {{ conference_data.name }} Media Manager</a></h1>
+      <div id="top-navigation">
+        {% if user %}
+        Welcome <strong>{{ user.firstname }} | {{user.account_type}}</strong>
+
+        <br><br><a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
+        <span>|</span>
+        <a href="/logout">Log out</a>
+          {% if user.account_type == "admin" %}
+          &nbsp;<span>|&nbsp;</span>
+          <a href="/admin">Admin</a>
+          {% else %}
+          <span>|</span>
+          <a href="/default">Home</a>
+          {% endif %}
+        {% else %}
+        Welcome
+
+        <br />  <a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
+        <span>|</span>
+        <a href="/login">Log in</a>
+        <span>|</span>
+        <a href="/activate">Activate Account</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% block maincontent %}
+
+    {% endblock %}
+
+<!-- Footer -->
+<div id="footer">
+  <div class="footer-shell">
+    <span class="left">&copy; 2015 - Steven and Jill Marr</span>
+    <span class="right">
+      Powered by <a href="https://cloud.google.com/appengine/" title="Google App Engine">Google App Engine</a>
+    </span>
+  </div>
+</div>
+<!-- End Footer -->
+
+</body>
+</html>

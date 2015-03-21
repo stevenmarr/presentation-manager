@@ -1,0 +1,27 @@
+api_version: '1'
+application: presentationmgr
+basic_scaling:
+  max_instances: '1'
+handlers:
+- url: /utilities.*
+  script: utilities.app
+  secure: always
+instance_class: B2
+libraries:
+- name: setuptools
+  version: "latest"
+
+- name: ssl
+  version: "latest"
+
+- name: jinja2
+  version: "latest"
+
+- name: webapp2
+  version: "2.5.1"
+
+module: db-upload
+
+runtime: python27
+threadsafe: true
+version: 8-wtforms

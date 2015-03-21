@@ -1,0 +1,107 @@
+{% extends "main.html" %}
+{% block maincontent %}
+<!-- Main Nav -->
+
+<!-- End Main Nav -->
+  </div>
+</div>
+<!-- End Header -->
+
+<!-- Container -->
+<div id="container" >
+  <div class="shell">
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+        <!-- Content -->
+        <div id="content">
+          <!-- Box -->
+        <div class="box">
+      <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Current Admins</h2>
+
+          </div>
+
+          <!-- End Box Head -->
+        <!-- Table -->
+          <div class="table">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
+              <tr>
+                <th width>Firstname </th>
+                <th width >Lastname</th>
+                <th width>Email</th>
+                <th width>Account Activated</th>
+                <th></th>
+                <th></th>
+
+              </tr>
+            {% for u in users %}
+              <tr>
+                <td>{{u.firstname}} </td>
+                <td>{{u.lastname}}</td>
+                <td>{{u.email_address}}</td>
+                <td>{{u.verified}}</td>
+                <form action="/super_admin/delete_user_account" method="POST">
+                  <td><input type="hidden" name="user_id" value="{{u.email_address}}"/>
+                  <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
+                </form>
+                </tr>
+              {% endfor %}
+              </table>
+              </div>
+               <!-- Close Table-->
+            </div>
+             <!-- End Box -->
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2>Add New User</h2>
+          </div>
+          <!-- End Box Head -->
+
+
+            <!-- Form -->
+            <div class="form">
+              <form action="/super_admin/add_user_account" method="POST">
+                <p>
+                  <div>{{ form.firstname.label }} {{ form.firstname(class="field size1") }}</div>
+                  {% if form.firstname.errors %}
+                    <ul class="errors">{% for error in form.firstname.errors %}{{ error }}{% endfor %}</ul>
+                  {% endif %}
+                </p>
+                <p>
+                  <div>{{ form.lastname.label }} {{ form.lastname(class="field size1") }}</div>
+                  {% if form.lastname.errors %}
+                    <ul class="errors">{% for error in form.lastname.errors %}{{ error }}{% endfor %}</ul>
+                  {% endif %}
+                </p>
+                <p>
+                  <div>{{ form.email.label }} {{ form.email(class="field size1") }}</div>
+                  {% if form.email.errors %}
+                    <ul class="errors">{% for error in form.email.errors %}{{ error }}{% endfor %}</ul>
+                  {% endif %}
+                </p>
+
+            </div>
+            <!-- End Form -->
+            <!-- Form Buttons -->
+            <div class="buttons">
+              <input type="submit" class="button" value="Add Admin" />
+            </form>
+            </div>
+            <!-- End Form Buttons -->
+          </form>
+        </div>
+        <!-- End Box -->
+          </div>
+        <!-- End content -->
+              <div class="cl">&nbsp;</div>
+              </div>
+    <!-- Main -->
+            </div>
+             <!-- End Shell -->
+          </div>
+          {% endblock %}

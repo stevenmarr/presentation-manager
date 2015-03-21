@@ -1,0 +1,182 @@
+{% extends "main.html" %}
+{% block maincontent %}
+<!-- Main Nav -->
+<div id="navigation">
+  <ul>
+    <li><a href="/admin/manage_sessions" class="active"><span>Manage Sessions</span></a></li>
+    <li><a href="/admin/manage_users"><span>Manage Users</span></a></li>
+    <li><a href="/utilities"><span>Utilities</span></a></li>
+    <li><a href="/admin/conference_data"><span>Conference Data</span></a></li>
+    <li><a href="/admin/logs"><span>Logs</span></a></li>
+  </ul>
+</div>
+<!-- End Main Nav -->
+</div>
+</div>
+<!-- End Header -->
+<!-- Container -->
+<div id="container" >
+  <div class="shell">
+    <!-- Message OK -->
+    {% if success %}
+    <div class="msg msg-ok">
+      <p><strong>{{ message}}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message OK -->
+    <!-- Message Error -->
+    {% if failed %}
+    <div class="msg msg-error">
+      <p><strong>{{ message }}</strong></p>
+    </div>
+    {% endif %}
+    <!-- End Message Error -->
+    <br />
+    <!-- Main -->
+    <div id="main">
+      <div class="cl">&nbsp;</div>
+      <!-- Content -->
+      <div id="content">
+        {% if sessions %}
+        <!-- Box -->
+        <div class="box">
+          <!-- Box Head -->
+          <div class="box-head">
+            <h2 class="left">Current Sessions</h2>
+          </div>
+          <!-- End Box Head -->
+          <!-- Table -->
+          <div class="table">
+         <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
+              </div>
+              <tr>
+                
+                <th ></th>
+                <th ></th>
+                <th ></th>
+                <th ></th>
+                <th colspan="2"class="ac">Session</th>
+                <th colspan="2"class="ac">Presentation</th>
+              </tr>
+              <tr>
+                <th width="30%">Session Name</th>
+                <th width="15%">Room</th>
+                <th width ="20%">Presenter Name</th>
+                <th width = "15%" class="ac">Date and Time</th>
+                
+                <th width ="2%" class="ac">Edit</th>
+                <th width ="2%" class="ac">Delete</th>
+                <th width ="2%" class="ac">Edit</th>
+                <th width ="2%" class="ac">Exists</th>
+              </tr>
+              {% for session in sessions %}
+              <tr>
+                <td>{{session.name}}</td>
+                <td>{{session.room}}</td>
+                <td>
+                      {{session.presenter[0]}}, {{session.presenter[1]}}
+                </td>
+                <td class="ac">{{session.date_time}}</td>
+                      <!-- Session Edits -->
+              
+                <td class="ac">
+                <form action="/admin/edit_session" method="POST">
+                  <input type="hidden" name="session_key" value="{{session.key()}}"/>
+                    <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/>
+                    </form>
+                  </td>
+                  <!-- Session Deletes -->
+                  <td class="ac">
+                  <form action="/admin/delete_session" method="POST">
+                    <input type="hidden" name="session_key" value="{{session.key()}}">
+                      <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/>
+                    </form>
+                  </td>
+                <td class="ac"> 
+                <form action="/default" method = "POST">
+                
+                <input type="hidden" name="user_id" value="{{session.user_id}}">
+                <input type="image" src="/img/presentation_icon.png" name="submit" alt="Submit" width="25" height="25"/>
+                </form></td>
+                <!-- Presentation URL -->
+                <!-- Download Presentation -->
+                {% if session.blob_store_key == None %}
+                <td class="ac" ><img src = "/img/thumb-down.png" width="20" height ="20" alt = "No File"></a></td>
+                {% else %}
+                <td class="ac" ><img src = "/img/thumb-up.png" width="20" height ="20" alt = "File"></a></td>
+                 {% endif %}
+                </form>
+          
+                  </tr>
+                  {% endfor %}
+                </table>
+              </div>
+              <!-- Close Table-->
+            </div>
+            {% endif %}
+            <!-- End Box -->
+            <!-- Box -->
+            <div class="box">
+              <!-- Box Head -->
+              <div class="box-head">
+                <h2>Add New Session</h2>
+              </div>
+              <!-- End Box Head -->
+              <form action="/admin/add_session" method="POST">
+                <!-- Form -->
+                <div class="form">
+
+                  <p>
+                <div>
+                  {{ form.users.label }}  {{ form.users(class="field size1")  }} 
+                </div>
+                {% if form.users.errors %}
+                  <ul class="errors">{% for error in form.users.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              <p>
+                <div>{{ form.name.label }} {{ form.name(class="field size1") }}</div>
+                {% if form.name.errors %}
+                  <ul class="errors">{% for error in form.name.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+               <p>
+                <div>{{ form.room.label }} {{ form.room(class="field size2") }}</div>
+                {% if form.room.errors %}
+                  <ul class="errors">{% for error in form.room.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>{{ form.date.label }} {{ form.date(class="field size2") }}</div>
+                {% if form.date.errors %}
+                  <ul class="errors">{% for error in form.date.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              <p>
+                <div>{{ form.time.label }} {{ form.time(class="field size2") }}</div>
+                {% if form.time.errors %}
+                  <ul class="errors">{% for error in form.time.errors %}{{ error }}{% endfor %}</ul>
+                {% endif %}
+              </p>
+              </div>
+              <!-- End Form -->
+              <!-- Form Buttons -->
+              <div class="buttons">
+                <input type="submit" class="button" value="Add Session" />
+              </div>
+              <!-- End Form Buttons -->
+            </form>
+          </div>
+          <!-- End Box -->
+   
+        </div>
+        <!-- End content -->
+        <div class="cl">&nbsp;</div>
+      </div>
+      <!-- Main -->
+    </div>
+    <!-- End Shell -->
+  </div>
+  <!-- End Container -->
+  {% endblock %}
+
+
