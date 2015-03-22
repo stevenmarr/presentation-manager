@@ -1,5 +1,3 @@
-
-
 from google.appengine.api import taskqueue
 from google.appengine.ext import blobstore, db
 from models import SessionData, AppEventData
@@ -135,3 +133,4 @@ app = webapp2.WSGIApplication(
 	('/serve/([^/]+)?', 			ServeHandler),
 	('/delete/([^/]+)?', 			DeleteBlobStoreHandler)
 ], debug=True, config=config)
+

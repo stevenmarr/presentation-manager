@@ -1,4 +1,3 @@
-#all messages are (subject, body)
 from constants import CONF_NAME
 
 

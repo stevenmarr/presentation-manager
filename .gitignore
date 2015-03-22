@@ -1,0 +1,6 @@
+secrets.py
+secrets.pyc
+*.pyc
+/*.pyc
+wtforms
+ndb

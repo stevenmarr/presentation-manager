@@ -84,3 +84,4 @@ class ConferenceData(db.Model):
     password_reset_msg =        db.TextProperty(default = '''Dear {name},\nPlease click on the following link to reset your password {url}''')
     new_account_msg =           db.TextProperty(default = '''Dear {name},\nYour account is ready for activation for the upcoming event, Please click on the following link to activate your account {url}''')
     recieved_presentation_msg = db.TextProperty(default =  '''Dear {name},\nCongratulations your presentation has uploaded successfully, to view your submission and confirm the upload please click <a href="{url}">here</a>''')
+

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "main.html" %}
 {% block content %}
     <h1>
@@ -28,3 +29,36 @@
         </form>
     </div>
     {% endblock %}
+||||||| merged common ancestors
+=======
+{% extends "main.html" %}
+{% block content %}
+    <h1>
+        Add a New Presenter
+    </h1>
+    <div>
+        <form method = "post">
+          <div class = "<!-- -->">
+            <label>First Name</label>
+            <br />
+              <input type = "textarea" rows="4" cols="100"  name = "first_name" value = {{first_name}}>
+                <label style="color: red">{{error_user_name}}</label>
+          </div>
+            <br />
+          <div class = "<!-- -->"><label>Last Name
+              <br /><input type = "textarea" rows="4" cols="100" name = "last_name" value = {{last_name}}><label style="color: red">{{error_user_name}}</label></div>
+              <br />
+              <div class = "<!-- -->"><label>Email (required)
+                <br /><input type = "textarea" rows="4" cols="100" name = "email" value = {{email}}><label style="color: red">{{error_email}}</label></div>
+                <br />
+                <div class = "<!-- -->"><label>Session Name (required)
+                  <br /><input type = "textarea" rows="4" cols="100" name = "session_name" value = {{session_name}}></label><label style="color: red">{{error_session_name}}</label></div>
+                  <br />
+                  <div class = "<!-- -->"><label>Session Room
+                    <br /><input type = "textarea" rows="4" cols="100" name = "session_room"></label></div>
+                    <br />
+                      <input type = "submit">
+        </form>
+    </div>
+    {% endblock %}
+>>>>>>> 9061c6c3dd2232a24bc2381dbf16e4c2ab810ef6

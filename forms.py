@@ -149,8 +149,3 @@ class ConferenceForm(ConferenceDataForm):
       [validators.Required()], widget = widgets.Input(input_type='date'))
   end = TextField(u'End Date', \
       [validators.Required()], widget = widgets.Input(input_type='date'))
-  
-
-
-
-

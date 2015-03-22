@@ -1,0 +1,6 @@
+backends:
+- name: db-upload
+  class: B2
+  instances: 4
+  start: google_to_dropbox.app
+  options: dynamic
