@@ -4,3 +4,4 @@ secrets.pyc
 /*.pyc
 wtforms
 ndb
+.DS_Store
