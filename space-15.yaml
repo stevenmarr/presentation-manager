@@ -1,0 +1,83 @@
+application: presentationmgr
+module: space-15
+version: 2
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /js
+  static_dir: statics/js
+
+- url: /css
+  static_dir: statics/css-space
+
+- url: /img
+  static_dir: statics/img-space
+
+- url: /db_oauth/.*
+  script: db_oauth2.app
+  secure: always
+
+- url: /serve/.*
+  script: serve_presentations.app
+  secure: always
+
+- url: /delete/.*
+  script: serve_presentations.app
+  secure: always
+
+- url: /upload
+  script: serve_presentations.app
+  secure: always
+
+- url: /default
+  script: serve_presentations.app
+  secure: always
+
+- url: /send_emails.*
+  script: messages.app
+  secure: always
+
+- url: /utilities.*
+  script: utilities.app
+  secure: always
+
+#- url: /admin/update_dropbox.*
+#  script: google_to_dropbox.app
+
+- url: /super_admin.*
+  script: super_admin_handlers.app
+  secure: always
+
+- url: /admin.*
+  script: admin.app
+  secure: always
+
+- url: /post_conference_data
+  script: presentations.app
+  secure: always
+
+- url: /.*
+  script: main.app
+  secure: always
+
+
+
+libraries:
+- name: setuptools
+  version: "latest"
+
+- name: ssl
+  version: "latest"
+
+- name: jinja2
+  version: "latest"
+
+- name: webapp2
+  version: "2.5.1"
