@@ -359,12 +359,14 @@ class LoginHandler(BaseHandler):
     user_id = ('%s|%s' % (self.module, email))
     user = self.user_model.get_by_auth_id(user_id)
     if not user:
-        self._serve_page(True, "Invalid user name please try again")
-        return
+        return self.render_response('login.html', 
+                                      failed = True, 
+                                      message =  "Invalid login please try again", 
+                                      form = form)
     else:
         if not user.password:
-            self.redirect('/activate')
-            return
+            return self.redirect('/activate')
+            
         password = form.password.data
 
         try:
@@ -372,13 +374,17 @@ class LoginHandler(BaseHandler):
             save_session=True)
 
           if self.auth.get_user_by_session()['account_type'] == 'admin':
-              self.redirect('/admin')
-              return
+              return self.redirect('/admin')
+              
           else: self.redirect('/default')
-          self.redirect('/default')
+          return self.redirect('/default')
         except (InvalidAuthIdError, InvalidPasswordError) as e:
-          self.render_response('login.html', failed = True, message =  "Invalid login please try again")
+          return self.render_response('login.html', 
+                                      failed = True, 
+                                      message =  "Invalid login please try again", 
+                                      form = form)
   def _serve_page(self, failed=False, message = ""):
+    form = forms.LoginForm()
     email = self.request.get('email').lower()
     params = {
       'email': email,
