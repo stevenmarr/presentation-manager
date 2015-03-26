@@ -41,7 +41,7 @@
               <tr>
                 <td>{{u.firstname}} </td>
                 <td>{{u.lastname}}</td>
-                <td>{{u.email_address}}</td>
+                <td>{{u.email}}</td>
                 <td>{{u.verified}}</td>
                 <form action="/super_admin/delete_user_account" method="POST">
                   <td><input type="hidden" name="user_id" value="{{u.email_address}}"/>
