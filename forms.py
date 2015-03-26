@@ -9,9 +9,9 @@ from dateutil.parser import *
 dateRE = '1[4-9][0-1][1-9][0-3][0-1]-[0-2][1-9]:[0-5][0-9]'
 
 class RegistrationForm(Form):
-    username    = StringField('Username', [validators.Length(min=4, max=25)])
-    email       = StringField('Email Address', [validators.Length(min=6, max=35)])
-    accept_rules= BooleanField('I accept the site rules', [validators.InputRequired()])
+    username    = StringField(u'Username', [validators.Length(min=4, max=25)])
+    email       = StringField(u'Email Address', [validators.Length(min=6, max=35)])
+    accept_rules= BooleanField(u'I accept the site rules', [validators.InputRequired()])
 
 
 class ActivateForm(Form):
@@ -27,19 +27,19 @@ class ActivateForm(Form):
     #logging.info("Verify is %s" % password_confirm.data)
 
 class LoginForm(Form):
-    email = StringField('Email',
+    email = StringField(u'Email',
                        [validators.Required(), validators.Email()])
-    password = PasswordField('Password',
+    password = PasswordField(u'Password',
                              [validators.Required()])
 
 class AddUserForm(Form):
-    email =     StringField('Email',
+    email =     StringField(u'Email',
                           [validators.Required(), validators.Email()])
-    firstname = TextField('First Name',
+    firstname = TextField(u'First Name',
                           [validators.Required()])
-    lastname =  TextField('Last Name',
+    lastname =  TextField(u'Last Name',
                           [validators.Required()])
-    email_user = BooleanField('Email presenter with account activation information')
+    email_user = BooleanField(u'Email presenter with account activation information')
 
 class AddAdminForm(AddUserForm):
     pass
