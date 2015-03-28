@@ -1,11 +1,5 @@
 {% extends "main.html" %}
 {% block maincontent %}
-<!-- Main Nav -->
-
-<!-- End Main Nav -->
-  </div>
-</div>
-<!-- End Header -->
 
 <!-- Container -->
 <div id="container" >
@@ -33,22 +27,24 @@
                 <th width >Lastname</th>
                 <th width>Email</th>
                 <th width>Account Activated</th>
-                <th></th>
-                <th></th>
-
+                <th width>Account Type</th>
+                <th width>Delete</th>
               </tr>
+            {% if users %}
             {% for u in users %}
               <tr>
                 <td>{{u.firstname}} </td>
                 <td>{{u.lastname}}</td>
                 <td>{{u.email}}</td>
                 <td>{{u.verified}}</td>
+                <td>{{u.account_type}}</td>
                 <form action="/super_admin/delete_user_account" method="POST">
-                  <td><input type="hidden" name="user_id" value="{{u.email_address}}"/>
+                  <td><input type="hidden" name="user_id" value="{{u.email}}"/>
                   <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
                 </form>
                 </tr>
               {% endfor %}
+              {% endif %}
               </table>
               </div>
                <!-- Close Table-->
@@ -83,6 +79,12 @@
                   {% if form.email.errors %}
                     <ul class="errors">{% for error in form.email.errors %}{{ error }}{% endfor %}</ul>
                   {% endif %}
+                </p>
+                <p>
+                  <div>{{ form.account_type.label }} {{ form.account_type(class="field size1") }}</div>
+                  <!--{% if form.account_type.errors %}
+                    <ul class="errors">{% for error in form.account_type.errors %}{{ error }}{% endfor %}</ul>
+                  {% endif %}-->
                 </p>
 
             </div>

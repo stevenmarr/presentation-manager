@@ -42,8 +42,8 @@ class AddUserForm(Form):
     email_user = BooleanField(u'Email presenter with account activation information')
 
 class AddAdminForm(AddUserForm):
-    pass
-
+    account_type = SelectField(u'User type')
+   
 SessionDataForm = db.model_form(SessionData, base_class=Form, field_args={
    'users': {
        'label': 'User Id',

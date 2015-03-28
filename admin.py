@@ -7,7 +7,7 @@ import forms
 from constants import SENDER
 from google.appengine.api import mail, modules, taskqueue
 from models import User, SessionData, AppEventData, ConferenceData
-from main import BaseHandler, config, admin_required, jinja2_factory, check_csv, AccountActivateHandler, data_cache
+from main import BaseHandler, config, user_required, admin_required, jinja2_factory, check_csv, AccountActivateHandler, data_cache
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import db, blobstore, ndb
 
@@ -18,7 +18,7 @@ from google.appengine.api import taskqueue
 
 #Render main admin page
 class LogsHandler(BaseHandler):
-    @admin_required
+    @user_required
     def get(self):
         user_events = data_cache.get('%s-user_events'% self.module)
         if user_events == None:
@@ -40,6 +40,7 @@ class LogsHandler(BaseHandler):
                                 session_events =        session_events,
                                 file_events =           file_events)
 class ManageConferenceHandler(BaseHandler):
+    @admin_required
     def get(self):
         conference_data = self.get_conference_data()
         form = forms.ConferenceForm(obj = conference_data)
@@ -66,16 +67,16 @@ class ManageConferenceHandler(BaseHandler):
         return self.redirect('/admin/conference_data')
 #Session Management
 class ManageSessionsHandler(BaseHandler):
-    @admin_required
+    @user_required
     def get(self):
         sessions = self.get_sessions()
         form = forms.SessionForm()
         form.users.choices = self.get_users_tuple()
-        self.render_response("manage_sessions.html",
+        return self.render_response("manage_sessions.html",
                                 sessions =  sessions,
                                 form =      form)
 class EditSessionHandler(BaseHandler):
-    @admin_required
+    @user_required
     def post(self):
         key = self.request.get('session_key')
         session = SessionData.get(key)

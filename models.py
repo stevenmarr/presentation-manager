@@ -10,7 +10,8 @@ class User(webapp2_extras.appengine.auth.models.User):
     email = ndb.StringProperty()
     firstname = ndb.StringProperty()
     lastname = ndb.StringProperty()
-    account_type = ndb.StringProperty(required = True, default = "user", choices = ('user', 'admin'))
+    account_type_choices = ('presenter', 'user', 'admin', 'super_admin')
+    account_type = ndb.StringProperty(required = True, default = "user", choices = account_type_choices)
     password = ndb.StringProperty()
     module = ndb.StringProperty(required = True, default = module)
     def set_password(self, raw_password):
