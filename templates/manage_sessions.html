@@ -29,7 +29,8 @@
         <div class="box">
           <!-- Box Head -->
           <div class="box-head">
-            <h2 class="left">Current Sessions</h2>
+            <h2 class="left">Current Sessions &nbsp;|&nbsp;</h2>
+            {% for date in dates %}&nbsp;<a href="{{uri_for('session_by_date',date=date)}}"><font color="FFFFFF">{{dates[date]}}</font></a>&nbsp;{% endfor %}
           </div>
           <!-- End Box Head -->
           <!-- Table -->
@@ -63,7 +64,7 @@
                 <td>
                       {{session.presenter[0]}}, {{session.presenter[1]}}
                 </td>
-                <td class="ac">{{session.date_time}}</td>
+                <td class="ac">{{session.date}} {{session.time}}</td>
                       <!-- Session Edits -->
               
                 <td class="ac">

@@ -10,12 +10,12 @@ from models import User, SessionData, AppEventData, ConferenceData
 from main import BaseHandler, config, user_required, admin_required, jinja2_factory, check_csv, AccountActivateHandler, data_cache
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import db, blobstore, ndb
-
+from datetime import date
 from webapp2_extras.appengine.auth.models import Unique
 from dateutil.parser import *
 from google.appengine.api import taskqueue
 
-
+weekdays = {7:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'}
 #Render main admin page
 class LogsHandler(BaseHandler):
     @user_required
@@ -72,9 +72,18 @@ class ManageSessionsHandler(BaseHandler):
         sessions = self.get_sessions()
         form = forms.SessionForm()
         form.users.choices = self.get_users_tuple()
+        #dates = SessionData.all().filter('module =', self.module).group('date').get()
+        result = db.GqlQuery("SELECT date, dotw FROM SessionData WHERE module = '%s' ORDER BY date DESC"% self.module)
+        dates = {}
+        for date in result:
+            if date.date in dates: pass
+            else: dates[date.date]=date.dotw
         return self.render_response("manage_sessions.html",
                                 sessions =  sessions,
-                                form =      form)
+                                form =      form,
+                                dates =     dates)
+
+
 class EditSessionHandler(BaseHandler):
     @user_required
     def post(self):
@@ -83,8 +92,9 @@ class EditSessionHandler(BaseHandler):
         user = User.query(User.email == session.user_id).get()
         form = forms.SessionForm(obj = session)
         form.users.choices = self.get_users_tuple()
-        form.date.data = parse('%s'% session.date_time).date()
-        form.time.data = parse('%s'% session.date_time).time()
+        form.date.data = parse('%s'% session.date).date()
+        form.time.data = parse('%s'% session.time).time()
+        
         if user:
             form.users.choices.insert(0, (session.user_id, user.lastname+', '+user.firstname))
             return self.render_response("edit_session.html",
@@ -96,6 +106,15 @@ class EditSessionHandler(BaseHandler):
                                 message = 'That presenter no longer exists in the database, please choose a new presenter',
                                 form = form,
                                 key =   key)
+class SessionByDateHandler(BaseHandler):
+    @user_required
+    def get(self, date):
+        sessions = db.GqlQuery("SELECT * FROM SessionData WHERE date = '%s'"% date)
+        dotw = weekdays[parse(date).date().isoweekday()]
+        return self.render_response(    'sessions.html', 
+                                        sessions = sessions, 
+                                        dotw = dotw)
+
 class UpdateSessionHandler(blobstore_handlers.BlobstoreUploadHandler, BaseHandler):
     @admin_required
     def post(self):
@@ -111,18 +130,21 @@ class UpdateSessionHandler(blobstore_handlers.BlobstoreUploadHandler, BaseHandle
                                         form=form,
                                         key=key)
         form.populate_obj(session)
-        session.date_time = parse('%s %s' %(form.date.data,form.time.data))
+        session.date = str(parse('%s'% form.date.data).date())
+        session.time = str(parse('%s'% form.time.data).time().isoformat())[0:5]
+        session.dotw = parse('%s'% form.date.data).date().strftime("%A")
         session.user_id = form.users.data
         session.save()
         data_cache.set('%s-sessions'% self.module, None)
         time.sleep(.25)
         form = forms.SessionForm()
         form.users.choices = self.get_users_tuple()
-        return self.render_response('manage_sessions.html',
-                                    success = True,
-                                    message = ('%s - session edited successfully' %session.name),
-                                    sessions =  self.get_sessions(),
-                                    form =      form)
+        return self 
+        #self.render_response('manage_sessions.html',
+        #                            success = True,
+        #                            message = ('%s - session edited successfully' %session.name),
+        #                            sessions =  self.get_sessions(),
+        #                            form =      form)
 
 class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler,  BaseHandler):
     @admin_required
@@ -140,17 +162,20 @@ class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler,  BaseHandler)
         presenter = query.get()
         session = SessionData(Parent = presenter)
         form.populate_obj(session)
-        session.date_time = parse('%s %s' %(form.date.data,form.time.data))
+        session.date = str(parse('%s'% form.date.data).date())
+        session.time = str(parse('%s'% form.time.data).time().isoformat())[0:5]
+        session.dotw = parse('%s'% form.date.data).date().strftime("%A")
         session.user_id = user_id
         session.presenter = self.get_users(user_id)
         session.save()
 
         time.sleep(.25)
-        return self.render_response('manage_sessions.html',
-                                success = True,
-                                message = ('%s - session created successfully' %session.name),
-                                sessions =  self.get_sessions(),
-                                form =      form)
+        return self.redirect(webapp2.uri_for('sessions'))
+                                #,
+                                ##success = True,
+                                #message = ('%s - session created successfully' %session.name),
+                                #sessions =  self.get_sessions(),
+                                #form =      form)
 class DeleteSessionHandler(BaseHandler):
     @admin_required
     def post(self):
@@ -345,7 +370,8 @@ class DeleteUserAccountHandler(BaseHandler):
 app = webapp2.WSGIApplication(
           [webapp2.Route('/admin',                          ManageSessionsHandler),
           webapp2.Route('/admin/conference_data',           ManageConferenceHandler),
-          webapp2.Route('/admin/manage_sessions',           ManageSessionsHandler),
+          webapp2.Route('/admin/manage_sessions',           ManageSessionsHandler, name='sessions'),
+          webapp2.Route('/admin/session/<date>',            SessionByDateHandler, name='session_by_date'),
           webapp2.Route('/admin/add_session',               AddSessionHandler),
           webapp2.Route('/admin/edit_session',              EditSessionHandler),
           webapp2.Route('/admin/update_session',            UpdateSessionHandler),

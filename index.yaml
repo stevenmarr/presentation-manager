@@ -31,6 +31,19 @@ indexes:
 - kind: SessionData
   properties:
   - name: module
+  - name: date
+    direction: desc
+
+- kind: SessionData
+  properties:
+  - name: module
+  - name: date
+    direction: desc
+  - name: dotw
+
+- kind: SessionData
+  properties:
+  - name: module
   - name: name
     direction: desc
 
