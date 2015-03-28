@@ -4,7 +4,7 @@ import dropbox
 from models import SessionData, ConferenceData
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import db, blobstore
-from main import admin_required, BaseHandler, config, data_cache
+from main import super_admin_required, admin_required, BaseHandler, config, data_cache
 
 import time
 import logging
