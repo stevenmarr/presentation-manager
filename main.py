@@ -245,12 +245,14 @@ class AccountActivateHandler(BaseHandler):
         user = self.user_model.get_by_auth_id(user_id)
         if not user:
           return self.render_response('activate.html',
-                                  failed = True,
-                                  message = 'That email address does not match an entry in our records, please try again.')
+                                  failed=True,
+                                  message='That email address does not match an entry in our records, please try again.',
+								  form=form)
         if user.verified == True:
           return self.render_response('login.html',
-                                  failed = True,
-                                  message = 'That account is already activated, please login below')
+                                  failed=True,
+                                  message='That account is already activated, please login below',
+								  form=form)
         
         if user:
             user.set_password(password)
