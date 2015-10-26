@@ -5,3 +5,7 @@ secrets.pyc
 wtforms
 ndb
 .DS_Store
+/dateutil
+/dropbox
+/wtforms
+
