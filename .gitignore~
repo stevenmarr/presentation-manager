@@ -1,0 +1,11 @@
+secrets.py
+secrets.pyc
+*.pyc
+/*.pyc
+wtforms
+ndb
+.DS_Store
+dateutil/
+dropbox/
+wtforms/
+
