@@ -36,7 +36,7 @@
     </div>
     <div id = "warning2">
     <div class="msg msg-error">
-      <p><strong>Upload hanlders expire after 10 minutes, please reload the page to post your presentation</strong></p>
+      <p><strong>Upload handlers expire after 10 minutes, please reload the page to post your presentation</strong></p>
     </div>
     </div>
     <!-- End Message Error -->
@@ -87,7 +87,7 @@
                     <td class="ac">--</td>
                 {% else %}
                   <td class="ac" >
-                    <a href = "{{'/serve/%s' % session.blob_store_key.key()}}">
+                    <a href = "{{uri_for('get_presentation',session.blob_store_key.key())}}">
                       <img src = "/img/open-file-icon.png" width="20" height ="20" alt = "Open file"></a>
 
                   </td>

@@ -68,7 +68,7 @@
                       <!-- Session Edits -->
               
                 <td class="ac">
-                <form action="/admin/edit_session" method="POST">
+                <form action= "uri_for('edit_session(session.key)')" method="GET">
                   <input type="hidden" name="session_key" value="{{session.key()}}"/>
                     <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/>
                     </form>

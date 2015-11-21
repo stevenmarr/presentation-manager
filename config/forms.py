@@ -4,7 +4,7 @@ from wtforms import widgets
 import re
 import logging
 from wtforms.ext.appengine import db, ndb
-from models import SessionData, User, ConferenceData
+from models.models import SessionData, User, ConferenceData
 from dateutil.parser import *
 dateRE = '1[4-9][0-1][1-9][0-3][0-1]-[0-2][1-9]:[0-5][0-9]'
 
