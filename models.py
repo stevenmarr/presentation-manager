@@ -2,9 +2,12 @@ import time
 import webapp2_extras.appengine.auth.models
 import logging
 from google.appengine.ext import ndb, db, blobstore
-from google.appengine.api import modules
+from google.appengine.api import modules,  memcache
 from webapp2_extras import security
+
 module = modules.get_current_module_name()
+
+data_cache = memcache.Client()
 
 class User(webapp2_extras.appengine.auth.models.User):
     email = ndb.StringProperty()

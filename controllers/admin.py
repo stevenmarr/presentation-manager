@@ -2,12 +2,10 @@ import time
 import csv
 import webapp2
 import logging
-import email_messages
-import forms
-from constants import SENDER
+
+
+
 from google.appengine.api import mail, modules, taskqueue
-from models import User, SessionData, AppEventData, ConferenceData
-from main import BaseHandler, config, user_required, admin_required, jinja2_factory, check_csv, AccountActivateHandler, data_cache
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import db, blobstore, ndb
 from datetime import date
@@ -15,6 +13,16 @@ from webapp2_extras.appengine.auth.models import Unique
 from dateutil.parser import *
 from google.appengine.api import taskqueue
 
+import email_messages
+import forms
+#added imports during reorg
+from helpers import user_required, admin_required, jinja2_factory, check_csv
+#from controllers import AccountActivateHandler
+#from main import BaseHandler
+from models import data_cache
+from models import User, SessionData, AppEventData, ConferenceData
+from mainh import BaseHandler
+from constants import SENDER
 weekdays = {7:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'}
 #Render main admin page
 class LogsHandler(BaseHandler):

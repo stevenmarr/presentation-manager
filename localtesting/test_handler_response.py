@@ -1,16 +1,14 @@
 # coding: utf-8 
 import unittest
 import webapp2
-from webapp2 import uri_for
 import webtest
+
 from google.appengine.ext import testbed
-from main import app, BaseHandler
-from forms import AddUserForm
+
+from main import app
+
 from mock import Mock, patch
-from models import AppEventData
-import admin
-import models
-import main
+
 
 
 class AppTest(unittest.TestCase):
@@ -29,40 +27,79 @@ class AppTest(unittest.TestCase):
     self.testbed.deactivate()
 
   def testLoginHandler(self):
-  	"""Verify existence of route '/''"""
+    """Verify existence of route '/'"""
 
-  	pass
+    response = self.testapp.get('/')
+    self.assertEqual(response.status_int, 200)
 
   def testAccountActivateHandler(self):
-  	"""Verify existence of route '/activate'"""
-  	pass
+    """Verify existence of route '/activate'"""
 
-  def testAccountVerificationHandler(self):
-  	pass
+    response = self.testapp.get('/activate')
+    self.assertEqual(response.status_int, 200)
+  	
 
   def testSetPasswordHandler(self):
     """Verify existence of router '/password' """
+    
+    response = self.testapp.post('/password')
+    self.assertNotEqual(response.status_int, 500)
+
+  def testLoginHandler(self):
+    """Verify existence of router '/login' """
+
+    response = self.testapp.get('/login')
+    self.assertEqual(response.status_int, 200) 
+    response = self.testapp.post('/login')
+    self.assertNotEqual(response.status_int, 500)
+
+
+  def testLogoutHandler(self):
+    """Verify existence of route '/logout' """
+
+    response = self.testapp.get('/logout')
+    self.assertEqual(response.status_int, 302) 
+
+
+  def testForgotPasswordHandler(self):
+    """Verify existence of router '/forgot' and that it 
+      responds correncty to get and post requests
+      """
+    response = self.testapp.get('/forgot')
+    self.assertEqual(response.status_int, 200) 
+    response = self.testapp.post('/forgot')
+    self.assertNotEqual(response.status_int, 500)
+
+
+  def  testManageSessionsHandler(self):
+    """Verify existence of route '/admin/manage_sessions' """
     pass
 
-  """   webapp2.Route('/',              LoginHandler,            name='home'),
-      webapp2.Route('/activate',      AccountActivateHandler, name='activate'),
-      webapp2.Route('/signup',        AccountActivateHandler, name='activate'),
-      webapp2.Route('/<type:v|p>/<user_id:\d+>-<signup_token:.+>',
-                              handler=VerificationHandler,    name='verification'),
-      webapp2.Route('/password',      SetPasswordHandler),
-      webapp2.Route('/login',         LoginHandler,           name='login'),
-      webapp2.Route('/logout',        LogoutHandler,          name='logout'),
-      webapp2.Route('/forgot',        ForgotPasswordHandler,  name='forgot'),
-      webapp2.Route('/.*',            NotFoundPageHandler),
-      webapp2.Route('/_ah/upload/.*',  BadUploadHandler),
-      webapp2.Route('/admin',                           admin.ManageSessionsHandler),
-      webapp2.Route('/admin/conference_data',           admin.ManageConferenceHandler),
-      webapp2.Route('/admin/manage_sessions',           admin.ManageSessionsHandler, name='sessions'),
-      webapp2.Route('/admin/session/<date>',            admin.SessionByDateHandler, name='session_by_date'),
-      webapp2.Route('/admin/add_session',               admin.AddSessionHandler),
-      webapp2.Route('/admin/edit_session',              admin.EditSessionHandler),
-      webapp2.Route('/admin/update_session',            admin.UpdateSessionHandler),
-      webapp2.Route('/admin/delete_session',            admin.DeleteSessionHandler),
+  def testSessionByDateHandler(self):
+    """Verify existence of route '/admin/session/<date>' """
+    pass
+
+  def testAddSessionHandler(self):
+    """Verify existence of route '/admin/add_session' """
+    pass
+
+  def testEditSessionHandler(self):
+    """Verify existence of route '/admin/edit_session' """
+    pass
+
+  def testUpdateSessionHandler(self):
+    """Verify existence of route '/admin/update_session' """
+    pass 
+
+  def testDeleteSessionHandler(self):
+    """Verify existence of route '/admin/delete_session' """
+    pass 
+
+  def RetrievePresentationHandler(self):
+    """Verify existence of route '/admin/retrieve_presentation' """
+    pass 
+
+"""      
       webapp2.Route('/admin/retrieve_presentation',     admin.RetrievePresentationHandler),
       webapp2.Route('/admin/logs',                      admin.LogsHandler),
 

@@ -1,16 +1,18 @@
 # coding: utf-8 
 import unittest
 import webapp2
-from webapp2 import uri_for
 import webtest
+
+from webapp2 import uri_for
 from google.appengine.ext import testbed
-from main import app, BaseHandler
-from forms import AddUserForm
 from mock import Mock, patch
-from models import AppEventData
-import admin
-import models
-import main
+
+from main import app
+from forms import AddUserForm
+from models import AppEventData, User
+from controllers import admin
+
+
 class AppTest(unittest.TestCase):
     def setUp(self):
         # Create a WSGI application.
@@ -34,8 +36,8 @@ class AppTest(unittest.TestCase):
         #self.assertEqual(response.normal_body, 'Login')
         self.assertEqual(response.content_type, 'text/html')
     
-    @patch('admin.mail.send_mail')   
-    def testAddUserAccountHandler(self, mail_send_mock):
+    #@patch('admin.mail.send_mail')   
+    def testAddUserAccountHandler(self):
         email = 'stevenmarr@example.com'
         firstname = 'steven'
         lastname = 'marr'
@@ -50,7 +52,7 @@ class AppTest(unittest.TestCase):
         assert('User added succesfully' in response.body)
     
     def createUser(self, a_type='user'):
-        user = models.User(email = 'stevenmarr@example.com',
+        user = User(email = 'stevenmarr@example.com',
                     firstname = 'steven',
                     lastname = 'marr',
                     account_type = a_type)
@@ -69,7 +71,7 @@ class AppTest(unittest.TestCase):
         self.activateUser(self.createUser())
         #ManageSessionsHandler
         response = self.testapp.get('/admin/manage_sessions')
-        self.assertEqual(response.status_int, 302)
+        self.assertEqual(response.status_int, 200)
     
     def testAdminHandlerAsAdmin(self):
         user = self.createUser(a_type='admin')
