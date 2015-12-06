@@ -23,30 +23,8 @@ from models import data_cache
 from models import User, SessionData, AppEventData, ConferenceData
 from mainh import BaseHandler
 from constants import SENDER
-weekdays = {7:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'}
 #Render main admin page
-class LogsHandler(BaseHandler):
-    @user_required
-    def get(self):
-        user_events = data_cache.get('%s-user_events'% self.module)
-        if user_events == None:
-            user_events = db.GqlQuery("SELECT * FROM AppEventData WHERE event_type = 'user' and module = '%s' ORDER BY time_stamp DESC LIMIT 50"% self.module)
-            logging.info('AppEventData DB Query')
-            data_cache.set('%s-user_events'% self.module, user_events)
-        session_events = data_cache.get('%s-session_events'% self.module)
-        if session_events == None:
-            session_events = db.GqlQuery("SELECT * FROM AppEventData WHERE event_type = 'session' and module = '%s' ORDER BY time_stamp DESC LIMIT 50"% self.module)
-            logging.info('AppEventData DB Query')
-            data_cache.set('%s-session_events'% self.module, session_events)
-        file_events = data_cache.get('%s-file_events'% self.module)
-        if file_events == None:
-            file_events = db.GqlQuery("SELECT * FROM AppEventData WHERE event_type = 'file' and module = '%s' ORDER BY time_stamp DESC LIMIT 50"% self.module)
-            logging.info('AppEventData DB Query')
-            data_cache.set('%s-file_events'% self.module, file_events)
-        self.render_response(   'logs.html',
-                                user_events =           user_events,
-                                session_events =        session_events,
-                                file_events =           file_events)
+
 class ManageConferenceHandler(BaseHandler):
     @admin_required
     def get(self):
@@ -75,24 +53,6 @@ class ManageConferenceHandler(BaseHandler):
         return self.redirect('/admin/conference_data')
 
 #Session Management
-class ManageSessionsHandler(BaseHandler):
-    @user_required
-    def get(self):
-        sessions = self.get_sessions()
-        form = forms.SessionForm()
-        form.users.choices = self.get_users_tuple()
-        #dates = SessionData.all().filter('module =', self.module).group('date').get()
-        result = db.GqlQuery("SELECT date, dotw FROM SessionData WHERE module = '%s' ORDER BY date DESC"% self.module)
-        # build a list of days of the week do sort dates by
-        dates = {}
-        for date in result:
-            if date.date in dates: pass
-            else: dates[date.date]=date.dotw
-        return self.render_response("manage_sessions.html",
-                                sessions =  sessions,
-                                form =      form,
-                                dates =     dates)
-
 
 
 class RetrievePresentationHandler(BaseHandler):
@@ -272,27 +232,3 @@ class DeleteUserAccountHandler(BaseHandler):
                                             users =          self.get_users())
 
         self.redirect('/admin/manage_users')
-
-
-"""app = webapp2.WSGIApplication(
-          [webapp2.Route('/admin',                          ManageSessionsHandler),
-          webapp2.Route('/admin/conference_data',           ManageConferenceHandler),
-          webapp2.Route('/admin/manage_sessions',           ManageSessionsHandler, name='sessions'),
-          webapp2.Route('/admin/session/<date>',            SessionByDateHandler, name='session_by_date'),
-          webapp2.Route('/admin/add_session',               AddSessionHandler),
-          webapp2.Route('/admin/edit_session',              EditSessionHandler),
-          webapp2.Route('/admin/update_session',            UpdateSessionHandler),
-          webapp2.Route('/admin/delete_session',            DeleteSessionHandler),
-          webapp2.Route('/admin/retrieve_presentation',     RetrievePresentationHandler),
-          webapp2.Route('/admin/logs',                      LogsHandler),
-
-          webapp2.Route('/admin/upload_conference_data/',   RenderConferenceUploadDataHandler),
-          webapp2.Route('/admin/check_conference_data/',    CheckConferenceDataHandler),
-          webapp2.Route('/admin/delete_upload',             DeleteConferenceUploadData),
-          webapp2.Route('/admin/commit_upload',             CommitConferenceUploadData),
-
-          webapp2.Route('/admin/manage_users',              ManageUserAccountsHandler),
-          webapp2.Route('/admin/add_user_account',          AddUserAccountHandler),
-          webapp2.Route('/admin/delete_user_account',       DeleteUserAccountHandler),
-          webapp2.Route('/activate',                        AccountActivateHandler,         name='activate')
-          ], debug=True, config=config)"""
