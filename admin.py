@@ -65,6 +65,7 @@ class ManageConferenceHandler(BaseHandler):
         data_cache.set('%s-conference_data'% self.module, None)
         time.sleep(.25)
         return self.redirect('/admin/conference_data')
+
 #Session Management
 class ManageSessionsHandler(BaseHandler):
     @user_required
@@ -74,6 +75,7 @@ class ManageSessionsHandler(BaseHandler):
         form.users.choices = self.get_users_tuple()
         #dates = SessionData.all().filter('module =', self.module).group('date').get()
         result = db.GqlQuery("SELECT date, dotw FROM SessionData WHERE module = '%s' ORDER BY date DESC"% self.module)
+        # build a list of days of the week do sort dates by
         dates = {}
         for date in result:
             if date.date in dates: pass
@@ -299,6 +301,7 @@ class ManageUserAccountsHandler(BaseHandler):
         users = self.get_users()
         form = forms.AddUserForm()
         self.render_response("manage_users.html", users = users, form=form)
+
 class AddUserAccountHandler(BaseHandler):
     @admin_required
     def post(self):
@@ -320,7 +323,7 @@ class AddUserAccountHandler(BaseHandler):
                                                     lastname=       lastname,
                                                     verified=       False)
         if created:
-            AppEventData(event = email, event_type='user', transaction='CREATE', user = self.user.email).put()
+            AppEventData(event = email, event_type='user', transaction='CREATE', user = email).put()
             data_cache.set('events', None)
             time.sleep(.25)
             data_cache.set('%s-users-tuple'% self.module, None)
@@ -367,7 +370,7 @@ class DeleteUserAccountHandler(BaseHandler):
         self.redirect('/admin/manage_users')
 
 
-app = webapp2.WSGIApplication(
+"""app = webapp2.WSGIApplication(
           [webapp2.Route('/admin',                          ManageSessionsHandler),
           webapp2.Route('/admin/conference_data',           ManageConferenceHandler),
           webapp2.Route('/admin/manage_sessions',           ManageSessionsHandler, name='sessions'),
@@ -388,4 +391,4 @@ app = webapp2.WSGIApplication(
           webapp2.Route('/admin/add_user_account',          AddUserAccountHandler),
           webapp2.Route('/admin/delete_user_account',       DeleteUserAccountHandler),
           webapp2.Route('/activate',                        AccountActivateHandler,         name='activate')
-          ], debug=True, config=config)
+          ], debug=True, config=config)"""
