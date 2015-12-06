@@ -22,7 +22,7 @@ from secrets import SECRET_KEY
 from models import SessionData, User, ConferenceData
 from constants import SENDER
 
-from controllers import account, admin
+from controllers import account, admin, sessions
 """
 class MainHandler(BaseHandler):
   def get(self):
@@ -65,12 +65,12 @@ app = webapp2.WSGIApplication(
       #webapp2.Route('/_ah/upload/.*',  BadUploadHandler),
       webapp2.Route('/admin',                           admin.ManageSessionsHandler),
       webapp2.Route('/admin/conference_data',           admin.ManageConferenceHandler),
-      webapp2.Route('/admin/manage_sessions',           admin.ManageSessionsHandler, name='sessions'),
-      webapp2.Route('/admin/session/<date>',            admin.SessionByDateHandler, name='session_by_date'),
-      webapp2.Route('/admin/add_session',               admin.AddSessionHandler),
-      webapp2.Route('/admin/edit_session',              admin.EditSessionHandler),
-      webapp2.Route('/admin/update_session',            admin.UpdateSessionHandler),
-      webapp2.Route('/admin/delete_session',            admin.DeleteSessionHandler),
+      webapp2.Route('/admin/manage_sessions',           sessions.ManageSessionsHandler, name='sessions'),
+      webapp2.Route('/admin/session/<date>',            sessions.SessionByDateHandler, name='session_by_date'),
+      webapp2.Route('/admin/add_session',               sessions.AddSessionHandler),
+      webapp2.Route('/admin/edit_session',              sessions.EditSessionHandler),
+      webapp2.Route('/admin/update_session',            sessions.UpdateSessionHandler),
+      webapp2.Route('/admin/delete_session',            sessions.DeleteSessionHandler),
       webapp2.Route('/admin/retrieve_presentation',     admin.RetrievePresentationHandler),
       webapp2.Route('/admin/logs',                      admin.LogsHandler),
 
