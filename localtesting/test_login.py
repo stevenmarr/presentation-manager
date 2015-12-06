@@ -77,10 +77,6 @@ class AppTest(unittest.TestCase):
         self.activateUser(user)
         response = self.login('stevenmarr@example.com', 'password')
         self.assertEqual(response.status_int, 200)
-        print response
-        assert('admin' in response.body)
-        response = self.testapp.get('/admin/manage_sessions')
-        self.assertEqual(response.status_int, 200)
     # Test login of activated user
     
     def login(self, email, password):

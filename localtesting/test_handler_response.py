@@ -15,33 +15,36 @@ import main
 
 class AppTest(unittest.TestCase):
 
-    def setUp(self):
-        # Create a WSGI application.
+  def setUp(self):
+    # Create a WSGI application.
+    # Wrap the app with WebTest’s TestApp.
+    self.testapp = webtest.TestApp(app)
+    self.testbed = testbed.Testbed()
+    self.testbed.activate()
+    self.testbed.init_datastore_v3_stub()
+    self.testbed.init_memcache_stub()
+    self.testbed.init_mail_stub()
 
-        # Wrap the app with WebTest’s TestApp.
-        self.testapp = webtest.TestApp(app)
-        self.testbed = testbed.Testbed()
-        self.testbed.activate()
-        self.testbed.init_datastore_v3_stub()
-        self.testbed.init_memcache_stub()
-        self.testbed.init_mail_stub()
-    def tear_down(self):
-        self.testbed.deactivate()
+  def tear_down(self):
+    self.testbed.deactivate()
 
- 	def testLoginHandler(self):
- 		"""Verify existence of route '/''"""
- 		pass
+  def testLoginHandler(self):
+  	"""Verify existence of route '/''"""
 
- 	def testAccountActivateHandler(self):
- 		"""Verify existence of route '/activate'"""
- 		pass
+  	pass
 
- 	def testAccountVerificationHandler(self):
- 		pass
+  def testAccountActivateHandler(self):
+  	"""Verify existence of route '/activate'"""
+  	pass
 
- 	def 
+  def testAccountVerificationHandler(self):
+  	pass
 
-    webapp2.Route('/',              LoginHandler,            name='home'),
+  def testSetPasswordHandler(self):
+    """Verify existence of router '/password' """
+    pass
+
+  """   webapp2.Route('/',              LoginHandler,            name='home'),
       webapp2.Route('/activate',      AccountActivateHandler, name='activate'),
       webapp2.Route('/signup',        AccountActivateHandler, name='activate'),
       webapp2.Route('/<type:v|p>/<user_id:\d+>-<signup_token:.+>',
@@ -72,4 +75,4 @@ class AppTest(unittest.TestCase):
       webapp2.Route('/admin/add_user_account',          admin.AddUserAccountHandler),
       webapp2.Route('/admin/delete_user_account',       admin.DeleteUserAccountHandler),
       webapp2.Route('/activate',                        admin.AccountActivateHandler)
-
+"""
