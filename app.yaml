@@ -1,6 +1,6 @@
 
 application: presentationmgr
-version: 8-wtforms
+version: 9-beta
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -59,9 +59,9 @@ handlers:
   script: super_admin_handlers.app
   secure: always
 
-- url: /admin.*
-  script: admin.app
-  secure: always
+#- url: /admin.*
+#  script: admin.app
+#  secure: always
 
 - url: /post_conference_data
   script: presentations.app
