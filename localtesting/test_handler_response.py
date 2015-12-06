@@ -9,7 +9,7 @@ from main import app
 
 from mock import Mock, patch
 
-
+import models
 
 class AppTest(unittest.TestCase):
 
@@ -63,37 +63,56 @@ class AppTest(unittest.TestCase):
 
   def testForgotPasswordHandler(self):
     """Verify existence of router '/forgot' and that it 
-      responds correncty to get and post requests
+      responds correctly to get and post requests
       """
     response = self.testapp.get('/forgot')
     self.assertEqual(response.status_int, 200) 
     response = self.testapp.post('/forgot')
     self.assertNotEqual(response.status_int, 500)
 
+  def testAddSessionHandler(self):
+    """Verify existence of route '/session/add' """
 
-  def  testManageSessionsHandler(self):
-    """Verify existence of route '/admin/manage_sessions' """
-    pass
+    response = self.testapp.post('/session/add')
+    self.assertNotEqual(response.status_int, 500)
+
+
+  def  testSessionsHandler(self):
+    """Verify existence of route '/sessions' """
+
+    response = self.testapp.get('/sessions')
+    self.assertEqual(response.status_int, 200) 
+    
 
   def testSessionByDateHandler(self):
-    """Verify existence of route '/admin/session/<date>' """
-    pass
+    """Verify existence of route '/sessions/<date>' """
 
-  def testAddSessionHandler(self):
-    """Verify existence of route '/admin/add_session' """
-    pass
-
+    response = self.testapp.get('/sessions/20151011')
+    self.assertEqual(response.status_int, 200) 
+    
   def testEditSessionHandler(self):
     """Verify existence of route '/admin/edit_session' """
-    pass
+    
+    response = self.testapp.post('/session/edit')
+    self.assertNotEqual(response.status_int, 500)    
+
 
   def testUpdateSessionHandler(self):
     """Verify existence of route '/admin/update_session' """
-    pass 
+
+    response = self.testapp.post('/session/update')
+    self.assertNotEqual(response.status_int, 500)
+
 
   def testDeleteSessionHandler(self):
     """Verify existence of route '/admin/delete_session' """
-    pass 
+
+    response = self.testapp.post('/session/delete')
+    self.assertNotEqual(response.status_int, 500)
+
+  def testLogsHandler(self):
+    """Verify existend of route '/logs'"""
+    self.assertEqual(self.testapp.get('/logs').status_int, 200)
 
   def RetrievePresentationHandler(self):
     """Verify existence of route '/admin/retrieve_presentation' """

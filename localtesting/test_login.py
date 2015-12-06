@@ -70,7 +70,7 @@ class AppTest(unittest.TestCase):
         #user = 
         self.activateUser(self.createUser())
         #ManageSessionsHandler
-        response = self.testapp.get('/admin/manage_sessions')
+        response = self.testapp.get('/sessions')
         self.assertEqual(response.status_int, 200)
     
     def testAdminHandlerAsAdmin(self):
