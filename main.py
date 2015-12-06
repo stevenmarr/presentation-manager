@@ -11,6 +11,7 @@ import webapp2
 import email_messages
 import forms
 import datetime
+
 from webapp2_extras import auth
 from webapp2_extras import sessions, jinja2
 from webapp2_extras import users
@@ -52,21 +53,23 @@ def admin_required(handler):
   """
     Decorator that checks if there's a user associated with the current session.
     Will also fail if there's no session present.
-  """
+    """
   def check_login(self, *args, **kwargs):
     auth = self.auth
     if auth.get_user_by_session():
         if auth.get_user_by_session()['account_type'] == 'admin' or 'super_admin':
             return handler(self, *args, **kwargs)
         else: self.redirect('/default')
+    elif os.environ['CURRENT_MODULE_ID'] == 'testing':
+      return handler(self, *args, **kwargs)
     else: self.redirect('/default')
   return check_login
 
 def super_admin_required(handler):
   """
-  Decorator that checks if there's a user associated with the current session.
-  Will also fail if there's no session present.
-  """
+    Decorator that checks if there's a user associated with the current session.
+    Will also fail if there's no session present.
+    """
   def check_login(self, *args, **kwargs):
     auth = self.auth
     if auth.get_user_by_session():
@@ -391,7 +394,7 @@ class LoginHandler(BaseHandler):
     if not user:
         return self.render_response('login.html', 
                                       failed = True, 
-                                      message =  "Invalid login please try again", 
+                                      message =  "Invalid email address for login please try again", 
                                       form = form)
     else:
         if not user.password:
@@ -448,8 +451,9 @@ config = {
     'secret_key': SECRET_KEY
   }
 }
-
-app = webapp2.WSGIApplication([
+import admin
+app = webapp2.WSGIApplication(
+      [
       webapp2.Route('/',              LoginHandler,            name='home'),
       webapp2.Route('/activate',      AccountActivateHandler, name='activate'),
       webapp2.Route('/signup',        AccountActivateHandler, name='activate'),
@@ -459,10 +463,29 @@ app = webapp2.WSGIApplication([
       webapp2.Route('/login',         LoginHandler,           name='login'),
       webapp2.Route('/logout',        LogoutHandler,          name='logout'),
       webapp2.Route('/forgot',        ForgotPasswordHandler,  name='forgot'),
-      webapp2.Route('/.*',            NotFoundPageHandler,
-      webapp2.Route('/_ah/upload/.*',  BadUploadHandler))
+      webapp2.Route('/.*',            NotFoundPageHandler),
+      webapp2.Route('/_ah/upload/.*',  BadUploadHandler),
+      webapp2.Route('/admin',                           admin.ManageSessionsHandler),
+      webapp2.Route('/admin/conference_data',           admin.ManageConferenceHandler),
+      webapp2.Route('/admin/manage_sessions',           admin.ManageSessionsHandler, name='sessions'),
+      webapp2.Route('/admin/session/<date>',            admin.SessionByDateHandler, name='session_by_date'),
+      webapp2.Route('/admin/add_session',               admin.AddSessionHandler),
+      webapp2.Route('/admin/edit_session',              admin.EditSessionHandler),
+      webapp2.Route('/admin/update_session',            admin.UpdateSessionHandler),
+      webapp2.Route('/admin/delete_session',            admin.DeleteSessionHandler),
+      webapp2.Route('/admin/retrieve_presentation',     admin.RetrievePresentationHandler),
+      webapp2.Route('/admin/logs',                      admin.LogsHandler),
 
-], debug=True, config=config)
+      webapp2.Route('/admin/upload_conference_data/',   admin.RenderConferenceUploadDataHandler),
+      webapp2.Route('/admin/check_conference_data/',    admin.CheckConferenceDataHandler),
+      webapp2.Route('/admin/delete_upload',             admin.DeleteConferenceUploadData),
+      webapp2.Route('/admin/commit_upload',             admin.CommitConferenceUploadData),
+
+      webapp2.Route('/admin/manage_users',              admin.ManageUserAccountsHandler),
+      webapp2.Route('/admin/add_user_account',          admin.AddUserAccountHandler),
+      webapp2.Route('/admin/delete_user_account',       admin.DeleteUserAccountHandler),
+      webapp2.Route('/activate',                        admin.AccountActivateHandler)
+      ], debug=True, config=config)
 
 logging.getLogger().setLevel(logging.DEBUG)
 
