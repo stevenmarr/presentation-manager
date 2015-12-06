@@ -31,13 +31,17 @@
         <br><br><a href="http://www.google.com/?gws_rd=ssl#q=help">Help</a>
         <span>|</span>
         <a href="/logout">Log out</a>
-          {% if user.account_type == "user" or "admin" or "super_admin" %}
+          
+
+          {% if user.account_type == "user" or user.account_type == "admin" or user.account_type ==  "super_admin" %}
+          
           &nbsp;<span>|&nbsp;</span>
           <a href="/admin">Admin</a>
           {% else %}
           <span>|</span>
-          <a href="/default">Home</a>
+          
           {% endif %}
+          <a href="/default">Home</a>
         {% else %}
         Welcome
 
