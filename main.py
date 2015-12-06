@@ -1,28 +1,11 @@
 #!/usr/bin/env python
-
-from google.appengine.ext.webapp import template
-from google.appengine.ext import ndb, db, blobstore
-from google.appengine.api import mail, memcache, modules
-from google.appengine.ext.webapp import blobstore_handlers
-import time
 import logging
-import os.path
-
 import webapp2
-import email_messages
-import forms
-import datetime
-
-#from webapp2_extras import auth
-from webapp2_extras import sessions
-#, jinja2
-from webapp2_extras import users
 
 from secrets import SECRET_KEY
-from models import SessionData, User, ConferenceData
-from constants import SENDER
+from controllers import account, admin, sessions, logs
 
-from controllers import account, admin, sessions
+
 """
 class MainHandler(BaseHandler):
   def get(self):
@@ -63,16 +46,17 @@ app = webapp2.WSGIApplication(
       webapp2.Route('/forgot',        account.ForgotPasswordHandler,  name='forgot'),
       #webapp2.Route('/.*',            NotFoundPageHandler),
       #webapp2.Route('/_ah/upload/.*',  BadUploadHandler),
-      webapp2.Route('/admin',                           admin.ManageSessionsHandler),
+      webapp2.Route('/sessions',                        sessions.SessionsHandler, name='sessions'),
       webapp2.Route('/admin/conference_data',           admin.ManageConferenceHandler),
-      webapp2.Route('/admin/manage_sessions',           sessions.ManageSessionsHandler, name='sessions'),
-      webapp2.Route('/admin/session/<date>',            sessions.SessionByDateHandler, name='session_by_date'),
-      webapp2.Route('/admin/add_session',               sessions.AddSessionHandler),
-      webapp2.Route('/admin/edit_session',              sessions.EditSessionHandler),
-      webapp2.Route('/admin/update_session',            sessions.UpdateSessionHandler),
-      webapp2.Route('/admin/delete_session',            sessions.DeleteSessionHandler),
-      webapp2.Route('/admin/retrieve_presentation',     admin.RetrievePresentationHandler),
-      webapp2.Route('/admin/logs',                      admin.LogsHandler),
+      # SESSIONS
+      webapp2.Route('/sessions/<date>',            sessions.SessionByDateHandler, name='session_by_date'),
+      webapp2.Route('/session/add',               sessions.AddSessionHandler),
+      webapp2.Route('/session/edit',              sessions.EditSessionHandler),
+      webapp2.Route('/session/update',            sessions.UpdateSessionHandler),
+      webapp2.Route('/session/delete',            sessions.DeleteSessionHandler),
+      
+      webapp2.Route('/admin/retrieve_presentation', admin.RetrievePresentationHandler),
+      webapp2.Route('/logs', logs.LogsHandler),
 
       webapp2.Route('/admin/upload_conference_data/',   admin.RenderConferenceUploadDataHandler),
       webapp2.Route('/admin/check_conference_data/',    admin.CheckConferenceDataHandler),
