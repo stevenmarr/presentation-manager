@@ -46,7 +46,7 @@ class AppTest(unittest.TestCase):
                  'firstname': firstname,
                  'lastname': lastname, 
                    'email_user':email_user}
-        response = self.testapp.post('/admin/add_user_account', params)
+        response = self.testapp.post('/user/add', params)
         self.assertEqual(response.status_int, 200)
         self.assertEqual(response.content_type, 'text/html')
         assert('User added succesfully' in response.body)

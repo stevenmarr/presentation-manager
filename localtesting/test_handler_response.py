@@ -114,6 +114,18 @@ class AppTest(unittest.TestCase):
     """Verify existend of route '/logs'"""
     self.assertEqual(self.testapp.get('/logs').status_int, 200)
 
+  def testManageUserAccountsHandler(self):
+    """Verify existence of route '/users'"""
+    self.assertEqual(self.testapp.get('/users').status_int, 200)
+
+  def testAddUserAccountHandler(self):
+    """Verify existence of route '/users/add'"""
+    self.assertEqual(self.testapp.post('/user/add').status_int, 200)
+
+  def testDeleteUserAccountHandler(self):
+    """Verify existence of route '/users/delete'"""
+    self.assertEqual(self.testapp.post('/user/delete').status_int, 302)
+
   def RetrievePresentationHandler(self):
     """Verify existence of route '/admin/retrieve_presentation' """
     pass 
