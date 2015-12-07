@@ -52,6 +52,7 @@ class User(webapp2_extras.appengine.auth.models.User):
     def query_user(cls, email):
         return cls.query(User.email == '%s' % email)
 
+
 class SessionData(db.Model):
     presenter =         db.ListProperty(unicode, default=None)
     user_id =           db.StringProperty()
@@ -69,6 +70,7 @@ class SessionData(db.Model):
     dbox_path =         db.CategoryProperty(default = None)
     dbox_size =         db.StringProperty(default = None)
 
+
 class AppEventData(db.Model):
     event =         db.StringProperty(required = True)
     event_type =    db.StringProperty(required = True, default = 'system', choices = ('user', 'system', 'session', 'file'))
@@ -76,6 +78,17 @@ class AppEventData(db.Model):
     time_stamp =    db.DateTimeProperty(auto_now_add = True, indexed = True)
     user =          db.StringProperty(required = True)
     module =        db.StringProperty(required = True, default = module)
+    
+    @classmethod
+    def query(cls, event_type, module):
+        query = data_cache.get('%s-%s-events'% (module, event_type))
+        if not query:
+            query = cls.gql("WHERE event_type = '%s' and module = '%s' \
+                            ORDER BY time_stamp \
+                            DESC LIMIT 50" % (event_type, module))
+            data_cache.set('%s-user_events'% module, query)
+        return query
+
 
 class ConferenceData(db.Model):
     module =                    db.StringProperty(default = module)
