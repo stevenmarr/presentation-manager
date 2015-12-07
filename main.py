@@ -3,7 +3,7 @@ import logging
 import webapp2
 
 from secrets import SECRET_KEY
-from controllers import account, admin, sessions, logs
+from controllers import account, admin, sessions, logs, user
 
 
 """
@@ -57,15 +57,14 @@ app = webapp2.WSGIApplication(
       
       webapp2.Route('/admin/retrieve_presentation', admin.RetrievePresentationHandler),
       webapp2.Route('/logs', logs.LogsHandler),
-
       webapp2.Route('/admin/upload_conference_data/',   admin.RenderConferenceUploadDataHandler),
       webapp2.Route('/admin/check_conference_data/',    admin.CheckConferenceDataHandler),
       webapp2.Route('/admin/delete_upload',             admin.DeleteConferenceUploadData),
       webapp2.Route('/admin/commit_upload',             admin.CommitConferenceUploadData),
 
-      webapp2.Route('/admin/manage_users',              admin.ManageUserAccountsHandler),
-      webapp2.Route('/admin/add_user_account',          admin.AddUserAccountHandler),
-      webapp2.Route('/admin/delete_user_account',       admin.DeleteUserAccountHandler)
+      webapp2.Route('/users',              user.ManageUserAccountsHandler, name='users'),
+      webapp2.Route('/user/add',          user.AddUserAccountHandler),
+      webapp2.Route('/user/delete',       user.DeleteUserAccountHandler)
       ], debug=True, config=config)
 
 logging.getLogger().setLevel(logging.DEBUG)
