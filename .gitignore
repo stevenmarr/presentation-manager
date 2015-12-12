@@ -7,3 +7,4 @@ ndb
 .DS_Store
 lib/
 *.py~
+.*~
