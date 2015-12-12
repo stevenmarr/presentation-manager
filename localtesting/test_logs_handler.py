@@ -18,8 +18,6 @@ module = "test"
 
 class AppTest(unittest.TestCase):
     def setUp(self):
-        # Create a WSGI application.
-        #app = webapp2.WSGIApplication([('/', BaseHandler)])
         # Wrap the app with WebTest’s TestApp.
         self.testapp = webtest.TestApp(app)
         self.testbed = testbed.Testbed()
