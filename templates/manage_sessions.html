@@ -30,7 +30,11 @@
           <!-- Box Head -->
           <div class="box-head">
             <h2 class="left">Current Sessions &nbsp;|&nbsp;</h2>
-            {% for date in dates %}&nbsp;<a href="{{uri_for('session_by_date',date=date)}}"><font color="FFFFFF">{{dates[date]}}</font></a>&nbsp;{% endfor %}
+            {% if dates %}
+            {% for date in dates %}&nbsp;
+              <a href="{{uri_for('session_by_date', date=date)}}"><font color="FFFFFF">{{dates[date]}}</font></a>
+              &nbsp;{% endfor %}
+            {% endif %}
           </div>
           <!-- End Box Head -->
           <!-- Table -->
@@ -68,14 +72,14 @@
                       <!-- Session Edits -->
               
                 <td class="ac">
-                <form action="/admin/edit_session" method="POST">
+                <form action="{{uri_for('session_edit')}}" method="POST">
                   <input type="hidden" name="session_key" value="{{session.key()}}"/>
                     <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/>
                     </form>
                   </td>
                   <!-- Session Deletes -->
                   <td class="ac">
-                  <form action="/admin/delete_session" method="POST">
+                  <form action={{uri_for('session_delete')}} method="POST">
                     <input type="hidden" name="session_key" value="{{session.key()}}">
                       <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/>
                     </form>
@@ -110,7 +114,7 @@
                 <h2>Add New Session</h2>
               </div>
               <!-- End Box Head -->
-              <form action="/admin/add_session" method="POST">
+              <form action="{{uri_for('session_add')}}" method="POST">
                 <!-- Form -->
                 <div class="form">
 
