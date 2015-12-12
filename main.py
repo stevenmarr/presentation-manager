@@ -2,8 +2,8 @@
 import logging
 import webapp2
 
-from secrets import SECRET_KEY
-from controllers import account, admin, sessions, logs, user
+from config.secrets import SECRET_KEY
+from controllers import account, admin, sessions, logs, user, conferences, presentations
 
 
 """
@@ -35,32 +35,35 @@ config = {
 #import admin
 app = webapp2.WSGIApplication(
       [
-      webapp2.Route('/',              account.LoginHandler,            name='home'),
-      webapp2.Route('/activate',      account.AccountActivateHandler, name='activate'),
-      webapp2.Route('/signup',        account.AccountActivateHandler, name='activate'),
+      webapp2.Route('/', account.LoginHandler, name='home'),
+      webapp2.Route('/activate', account.AccountActivateHandler, name='activate'),
+      webapp2.Route('/signup', account.AccountActivateHandler, name='activate'),
       webapp2.Route('/<type:v|p>/<user_id:\d+>-<signup_token:.+>',
                               handler=account.VerificationHandler,    name='verification'),
-      webapp2.Route('/password',      account.SetPasswordHandler),
-      webapp2.Route('/login',         account.LoginHandler,           name='login'),
-      webapp2.Route('/logout',        account.LogoutHandler,          name='logout'),
-      webapp2.Route('/forgot',        account.ForgotPasswordHandler,  name='forgot'),
+      webapp2.Route('/password', account.SetPasswordHandler),
+      webapp2.Route('/login', account.LoginHandler, name='login'),
+      webapp2.Route('/logout', account.LogoutHandler, name='logout'),
+      webapp2.Route('/forgot', account.ForgotPasswordHandler, name='forgot'),
       #webapp2.Route('/.*',            NotFoundPageHandler),
       #webapp2.Route('/_ah/upload/.*',  BadUploadHandler),
       webapp2.Route('/sessions',                        sessions.SessionsHandler, name='sessions'),
-      webapp2.Route('/admin/conference_data',           admin.ManageConferenceHandler),
-      # SESSIONS
-      webapp2.Route('/sessions/<date>',            sessions.SessionByDateHandler, name='session_by_date'),
-      webapp2.Route('/session/add',               sessions.AddSessionHandler),
-      webapp2.Route('/session/edit',              sessions.EditSessionHandler),
-      webapp2.Route('/session/update',            sessions.UpdateSessionHandler),
-      webapp2.Route('/session/delete',            sessions.DeleteSessionHandler),
       
-      webapp2.Route('/admin/retrieve_presentation', admin.RetrievePresentationHandler),
+      # SESSIONS
+      webapp2.Route('/sessions/<date>', sessions.SessionByDateHandler, name='session_by_date'),
+      webapp2.Route('/session/add', sessions.AddSessionHandler, name='session_add'),
+      webapp2.Route('/session/edit', sessions.EditSessionHandler, name='session_edit'),
+      webapp2.Route('/session/update',            sessions.UpdateSessionHandler),
+      webapp2.Route('/session/delete',            sessions.DeleteSessionHandler, name='session_delete'),
+      
+      webapp2.Route('/presentation/retrieve', presentations.RetrievePresentationHandler, name='retrieve_presentation'),
+      
       webapp2.Route('/logs', logs.LogsHandler),
-      webapp2.Route('/admin/upload_conference_data/',   admin.RenderConferenceUploadDataHandler),
-      webapp2.Route('/admin/check_conference_data/',    admin.CheckConferenceDataHandler),
-      webapp2.Route('/admin/delete_upload',             admin.DeleteConferenceUploadData),
-      webapp2.Route('/admin/commit_upload',             admin.CommitConferenceUploadData),
+
+      webapp2.Route('/conferences/conference_data', conferences.ManageConferenceHandler, name='conference_data'),
+      webapp2.Route('/conferences/upload_conference_data', conferences.RenderConferenceUploadDataHandler),
+      webapp2.Route('/conferences/check_conference_data', conferences.CheckConferenceDataHandler),
+      webapp2.Route('/conferences/delete_upload', conferences.DeleteConferenceUploadData),
+      webapp2.Route('/conferences/commit_upload', conferences.CommitConferenceUploadData),
 
       webapp2.Route('/users',              user.ManageUserAccountsHandler, name='users'),
       webapp2.Route('/user/add',          user.AddUserAccountHandler),
