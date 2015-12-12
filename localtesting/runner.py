@@ -9,9 +9,11 @@ import unittest
 sys.path.insert(1, '/usr/local//google_appengine')
 sys.path.insert(1, '/usr/local/google_appengine/lib/yaml/lib')
 sys.path.insert(1, '~/presentation-manager/lib')
-sys.path.insert(1, '~/presentation-manager/')
+sys.path.insert(0, '/Users/personal/presentation-manager/')
 
+os.environ['PYTHONPATH'] = "/Users/personal/presentation-manager/"
 os.environ['CURRENT_MODULE_ID'] = 'testing'
+
 USAGE = """%prog SDK_PATH TEST_PATH
 Run unit tests for App Engine apps.
 
