@@ -2,14 +2,14 @@
 import unittest
 import webapp2
 import webtest
+import datetime
 
-from google.appengine.ext import testbed
-
-from main import app
-
+from google.appengine.ext import testbed, db, blobstore
 from mock import Mock, patch
 
 import models
+from main import app
+from controllers import mainh, sessions
 
 class AppTest(unittest.TestCase):
 
@@ -22,6 +22,10 @@ class AppTest(unittest.TestCase):
     self.testbed.init_datastore_v3_stub()
     self.testbed.init_memcache_stub()
     self.testbed.init_mail_stub()
+    self.mock_session = models.SessionData(
+      user_id = "test@example.com",
+      name = "test",
+      room = "101").put()
 
   def tear_down(self):
     self.testbed.deactivate()
@@ -76,10 +80,10 @@ class AppTest(unittest.TestCase):
     response = self.testapp.post('/session/add')
     self.assertNotEqual(response.status_int, 500)
 
-
-  def  testSessionsHandler(self):
+  @patch.object(db, 'GqlQuery')  
+  def  testSessionsHandler(self, mock_dates):
     """Verify existence of route '/sessions' """
-
+    mock_dates.return_value(['20151011','20151012','20151013'])
     response = self.testapp.get('/sessions')
     self.assertEqual(response.status_int, 200) 
     
@@ -90,10 +94,11 @@ class AppTest(unittest.TestCase):
     response = self.testapp.get('/sessions/20151011')
     self.assertEqual(response.status_int, 200) 
     
+  
   def testEditSessionHandler(self):
     """Verify existence of route '/admin/edit_session' """
-    
-    response = self.testapp.post('/session/edit')
+    params = {'session_key': self.mock_session}
+    response = self.testapp.post('/session/edit', params)
     self.assertNotEqual(response.status_int, 500)    
 
 
@@ -103,10 +108,15 @@ class AppTest(unittest.TestCase):
     response = self.testapp.post('/session/update')
     self.assertNotEqual(response.status_int, 500)
 
-
-  def testDeleteSessionHandler(self):
+  
+  @patch.object(mainh.BaseHandler, 'user', email='test')
+  def testDeleteSessionHandler(self, user_mock):
     """Verify existence of route '/admin/delete_session' """
+    params = {'session_key': self.mock_session}
+    #session_model_mock.return_value=self.mock_session
+    #log_mock.return_value=True
 
+    #mock_session_delete.return_value = True
     response = self.testapp.post('/session/delete')
     self.assertNotEqual(response.status_int, 500)
 
@@ -130,17 +140,39 @@ class AppTest(unittest.TestCase):
     """Verify existence of route '/admin/retrieve_presentation' """
     pass 
 
-"""      
-      webapp2.Route('/admin/retrieve_presentation',     admin.RetrievePresentationHandler),
-      webapp2.Route('/admin/logs',                      admin.LogsHandler),
+  @patch.object(mainh.BaseHandler, 'get_conference_data', start_date=datetime.datetime(2015, 10, 11), end_date=datetime.datetime(2015, 10, 13))
+  def testManageConferenceHandler(self, mock_conf_data):
+    """Verify existence of route '/conferences/conference_data' """
+    
+    self.assertEqual(self.testapp.get('/conferences/conference_data').status_int, 200)
 
-      webapp2.Route('/admin/upload_conference_data/',   admin.RenderConferenceUploadDataHandler),
-      webapp2.Route('/admin/check_conference_data/',    admin.CheckConferenceDataHandler),
-      webapp2.Route('/admin/delete_upload',             admin.DeleteConferenceUploadData),
-      webapp2.Route('/admin/commit_upload',             admin.CommitConferenceUploadData),
+  def testRenderConferenceUploadDataHandler(self):
+    """Verify existence of route '/conferences/upload_conference_data' """
+    
+    self.assertNotEqual(self.testapp.post('/conferences/upload_conference_data').status_int, 500)
 
-      webapp2.Route('/admin/manage_users',              admin.ManageUserAccountsHandler),
-      webapp2.Route('/admin/add_user_account',          admin.AddUserAccountHandler),
-      webapp2.Route('/admin/delete_user_account',       admin.DeleteUserAccountHandler),
-      webapp2.Route('/activate',                        admin.AccountActivateHandler)
-"""
+  def testCheckConferenceDataHandler(self):
+    """Verify existence of route '/conferences/check_conference_data' """
+    
+    self.assertNotEqual(self.testapp.post('/conferences/check_conference_data').status_int, 500)
+
+  @patch.object(blobstore.BlobInfo, 'get')
+  def testDeleteConferenceUploadData(self, mock_blobstore_get):
+    """Verify existence of route '/conferences/delete_upload' """
+
+    params = {'blob_key': 'test_key'}
+    self.assertEqual(self.testapp.post('/conferences/delete_upload', params).status_int, 302)  
+    
+    mock_blobstore_get.assert_called_with('test_key')
+    mock_blobinfo = Mock()
+    mock_blobstore_get.return_value = mock_blobinfo
+
+  def testCommitConferenceUploadData(self):
+    """Verify existence of route '/conferences/delete_upload' """
+    pass
+
+  def testRetrievePresentation(self):
+    """Verify existence of route '/presentation/retrieve' """
+
+    self.assertEqual(self.testapp.post('/presentation/retrieve').status_int, 302) 
+
