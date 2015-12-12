@@ -52,7 +52,6 @@ class User(webapp2_extras.appengine.auth.models.User):
     def query_user(cls, email):
         return cls.query(User.email == '%s' % email)
 
-
 class SessionData(db.Model):
     presenter =         db.ListProperty(unicode, default=None)
     user_id =           db.StringProperty()
@@ -64,7 +63,7 @@ class SessionData(db.Model):
     #date_time =         db.DateTimeProperty()
     create_date =       db.DateTimeProperty(auto_now_add = True)
     module =            db.StringProperty(default = module)
-    blob_store_key =    blobstore.BlobReferenceProperty()
+    blob_store_key =    blobstore.BlobReferenceProperty(default = None)
     filename =          db.StringProperty()
     uploaded_to_dbox =  db.BooleanProperty(default = False)
     dbox_path =         db.CategoryProperty(default = None)
