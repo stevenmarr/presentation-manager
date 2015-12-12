@@ -1,3 +1,5 @@
+import logging
+
 from google.appengine.ext.webapp import blobstore_handlers
 from google.appengine.ext import db
 from dateutil.parser import parse
@@ -6,7 +8,7 @@ from webapp2 import uri_for
 from mainh import BaseHandler
 from helpers import user_required, admin_required
 from forms import SessionForm
-from models import SessionData, User
+from models import SessionData, AppEventData, User, data_cache
 
 
 class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler,  BaseHandler):
@@ -32,7 +34,7 @@ class AddSessionHandler(blobstore_handlers.BlobstoreUploadHandler,  BaseHandler)
         session.presenter = self.get_users(user_id)
         session.save()
 
-        time.sleep(.25)
+        #time.sleep(.25)
         return self.redirect(uri_for('sessions'))
                                 #,
                                 ##success = True,
@@ -82,8 +84,10 @@ class EditSessionHandler(BaseHandler):
         user = User.query(User.email == session.user_id).get()
         form = SessionForm(obj = session)
         form.users.choices = self.get_users_tuple()
-        form.date.data = parse('%s'% session.date).date()
-        form.time.data = parse('%s'% session.time).time()
+        if form.date.data:
+            form.date.data = parse('%s'% session.date).date()
+        if form.time.data:
+            form.time.data = parse('%s'% session.time).time()
         
         if user:
             form.users.choices.insert(0, (session.user_id, user.lastname+', '+user.firstname))
@@ -105,6 +109,7 @@ class UpdateSessionHandler(blobstore_handlers.BlobstoreUploadHandler, BaseHandle
         try:
             session = SessionData.get(key)
         except:
+            logging.error("Invalid key from post data %s" % key)
             return self.redirect(uri_for('sessions'))
         form = SessionForm(self.request.POST, obj=session)
         form.users.choices = self.get_users_tuple()
@@ -122,7 +127,7 @@ class UpdateSessionHandler(blobstore_handlers.BlobstoreUploadHandler, BaseHandle
         session.user_id = form.users.data
         session.save()
         data_cache.set('%s-sessions'% self.module, None)
-        time.sleep(.25)
+        #time.sleep(.25)
         form = SessionForm()
         form.users.choices = self.get_users_tuple()
         return self 
@@ -140,11 +145,11 @@ class DeleteSessionHandler(BaseHandler):
         try: session = SessionData.get(key)
         except: return self.redirect(uri_for('sessions'))
         if session:#key = session.blob_store_key
-            if session.blob_store_key:
+            if session.blob_store_key != None:
                 session.blob_store_key.delete()
             AppEventData(event = session.name, event_type='session', transaction='DEL', user = self.user.email).put()
             data_cache.set('events', None)
             session.delete()
-            time.sleep(.25)
+            #time.sleep(.25)
         self.redirect('/admin/manage_sessions')
 
