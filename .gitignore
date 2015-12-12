@@ -6,4 +6,4 @@ wtforms
 ndb
 .DS_Store
 lib/
-
+*.py~
