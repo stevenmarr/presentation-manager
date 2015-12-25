@@ -7,7 +7,7 @@ import datetime
 from google.appengine.ext import testbed, db, blobstore
 from mock import Mock, patch
 
-import models
+import models.dbmodels as models
 from main import app
 from controllers import mainh, sessions
 
@@ -35,14 +35,7 @@ class AppTest(unittest.TestCase):
 
     response = self.testapp.get('/')
     self.assertEqual(response.status_int, 200)
-
-  def testAccountActivateHandler(self):
-    """Verify existence of route '/activate'"""
-
-    response = self.testapp.get('/activate')
-    self.assertEqual(response.status_int, 200)
   	
-
   def testSetPasswordHandler(self):
     """Verify existence of router '/password' """
     
@@ -169,7 +162,7 @@ class AppTest(unittest.TestCase):
 
   def testCommitConferenceUploadData(self):
     """Verify existence of route '/conferences/delete_upload' """
-    pass
+    
 
   def testRetrievePresentation(self):
     """Verify existence of route '/presentation/retrieve' """

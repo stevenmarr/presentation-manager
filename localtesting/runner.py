@@ -46,7 +46,7 @@ def main(sdk_path, test_path):
 
     # Discover and run tests.
     suite = unittest.loader.TestLoader().discover(test_path)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    unittest.TextTestRunner(verbosity=4).run(suite)
 
 
 if __name__ == '__main__':

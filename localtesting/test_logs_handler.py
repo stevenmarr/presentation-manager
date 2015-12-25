@@ -9,9 +9,9 @@ from google.appengine.ext import testbed
 from mock import Mock, patch
 
 from main import app
-from forms import AddUserForm
-from models import AppEventData, User
-from controllers import admin
+from models.forms import AddUserForm
+from models.dbmodels import AppEventData, User
+
 
 
 module = "test"
