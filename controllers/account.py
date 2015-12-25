@@ -1,9 +1,17 @@
+import logging
+
 from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
+from google.appengine.api import mail
+from webapp2 import uri_for
 
 from helpers import user_required
 from mainh import BaseHandler
-from forms import LoginForm, ActivateForm
+from models.forms import LoginForm, ActivateForm
+from config import email_messages
+from config.constants import SENDER
+
+log = logging.getLogger(__name__)
 
 
 class AccountActivateHandler(BaseHandler):
@@ -34,7 +42,6 @@ class AccountActivateHandler(BaseHandler):
         if user:
             user.set_password(password)
             user.put()
-            time.sleep(.25)
             user_id = user.get_id()
             token = self.user_model.create_signup_token(user_id)
             verification_url = self.uri_for('verification',
@@ -150,7 +157,7 @@ class SetPasswordHandler(BaseHandler):
 class LoginHandler(BaseHandler):
   def get(self):
     if self.user: #redirect to admin if already logged in
-        self.redirect('/admin')
+        self.redirect(uri_for('sessions'))
     #self._serve_page()
     form = LoginForm()
     self.render_response('login.html', form=form)
@@ -172,7 +179,7 @@ class LoginHandler(BaseHandler):
                                       form = form)
     else:
         if not user.password:
-            return self.redirect('/activate')
+            return self.redirect(uri_for('activate'))
             
         password = form.password.data
 
@@ -181,10 +188,10 @@ class LoginHandler(BaseHandler):
             save_session=True)
 
           if self.auth.get_user_by_session()['account_type'] == 'admin':
-              return self.redirect('/admin')
+              return self.redirect(uri_for('sessions'))
               
-          else: self.redirect('/default')
-          return self.redirect('/default')
+          else: #self.redirect(uri_for('home'))
+              return self.redirect(uri_for('home'))
         except (InvalidAuthIdError, InvalidPasswordError) as e:
           return self.render_response('login.html', 
                                       failed = True, 
