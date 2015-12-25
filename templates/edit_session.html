@@ -1,5 +1,6 @@
 {% extends "main.html" %}
 {% block maincontent %}
+<script>$('#sessions').toggleClass('active')</script>
 <!-- Main Nav -->
 <div id="navigation">
 </div>
@@ -37,7 +38,7 @@
             <h2>Edit Session</h2>
           </div>
           <!-- End Box Head -->
-          <form action="/admin/update_session" method="POST">
+          <form action="{{uri_for('update_session', key=key.urlsafe())}}" method="POST">
             <!-- Form -->
             <div class="form">
                 <input type="hidden" name="key" value="{{key}}"/>
@@ -63,17 +64,12 @@
                 {% endif %}
               </p>
               <p>
-                <div>{{ form.date.label }} {{ form.date(class="field size2") }}</div>
-                {% if form.date.errors %}
+                <div>{{ form.datetime.label }} {{ form.datetime(class="field size2") }}</div>
+                {% if form.datetime.errors %}
                   <ul class="errors">{% for error in form.date.errors %}{{ error }}{% endfor %}</ul>
                 {% endif %}
               </p>
-              <p>
-                <div>{{ form.time.label }} {{ form.time(class="field size2") }}</div>
-                {% if form.time.errors %}
-                  <ul class="errors">{% for error in form.time.errors %}{{ error }}{% endfor %}</ul>
-                {% endif %}
-              </p>
+              
 
             </div>
             <!-- Form Buttons -->

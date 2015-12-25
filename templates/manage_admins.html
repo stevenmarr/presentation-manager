@@ -14,7 +14,7 @@
         <div class="box">
       <!-- Box Head -->
           <div class="box-head">
-            <h2 class="left">Current Admins</h2>
+            <h2 class="left">Administrators</h2>
 
           </div>
 
@@ -61,7 +61,7 @@
 
             <!-- Form -->
             <div class="form">
-              <form action="/super_admin/add_user_account" method="POST">
+              <form action="{{uri_for('create_super_admin')}}" method="POST">
                 <p>
                   <div>{{ form.firstname.label }} {{ form.firstname(class="field size1") }}</div>
                   {% if form.firstname.errors %}

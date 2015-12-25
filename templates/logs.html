@@ -26,7 +26,7 @@
         <div class="box">
       <!-- Box Head -->
           <div class="box-head">
-            <h2 class="left">User Events</h2>
+            <h2 class="left">System Logs</h2>
 
           </div>
 
@@ -35,88 +35,23 @@
          <div class="log-table">
             <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
               <tr>
-                <th width="600px">User</th>
-                <th width="100px">Action</th>
-                <th width ="30px" >(GMT)</th>
-                <th>By</th>
+                <th width="100%">Event</th>
+                
+                
                 <th></th>
               </tr>
-            {% for event in user_events %}
+            {% for log in logs %}
               <tr>
-                <td>{{event.event}}</td>
-                <td>{{event.transaction}}</td>
-                <td>{{event.time_stamp}}</td>
-                <td>{{event.user}}</td>
+                <td>{{log}}</td>
+
               </tr>
               {% endfor %}
               </table>
               </div>
                <!-- Close Table-->
             </div>
-             <!-- End Box -->
-             <!-- Box -->
-        <div class="box">
-      <!-- Box Head -->
-          <div class="box-head">
-            <h2 class="left">Session Events</h2>
-
-          </div>
-
-          <!-- End Box Head -->
-        <!-- Table -->
-          <div class="log-table">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
-              <tr>
-                <th width="600px">Session</th>
-                <th width="100px">Action</th>
-                <th width ="30px" >(GMT)</th>
-                <th>By</th>
-                <th></th>
-              </tr>
-            {% for event in session_events %}
-              <tr>
-                <td>{{event.event}}</td>
-                <td>{{event.transaction}}</td>
-                <td>{{event.time_stamp}}</td>
-                <td>{{event.user}}</td>
-              </tr>
-              {% endfor %}
-              </table>
-              </div>
-               <!-- Close Table-->
-            </div>
-             <!-- End Box -->
-             <!-- Box -->
-        <div class="box">
-      <!-- Box Head -->
-          <div class="box-head">
-            <h2 class="left">Presentation Events</h2>
-
-          </div>
-
-          <!-- End Box Head -->
-        <!-- Table -->
-             <div class="log-table">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="sortable">
-              <tr>
-                <th width="600px">Presentation</th>
-                <th width="100px">Action</th>
-                <th width ="30px" >(GMT)</th>
-                <th>By</th>
-                <th></th>
-              </tr>
-            {% for event in file_events %}
-              <tr>
-                <td>{{event.event}}</td>
-                <td>{{event.transaction}}</td>
-                <td>{{event.time_stamp}}</td>
-                <td>{{event.user}}</td>
-              </tr>
-              {% endfor %}
-              </table>
-              </div>
-               <!-- Close Table-->
-            </div>
+            <li><a href="{{uri_for('logs',offset=offset)}}"><span>Offset</span></a></li>
+           
              <!-- End Box -->
       </div>
     </div>

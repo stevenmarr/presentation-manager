@@ -2,20 +2,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
   <meta name=viewport content="width=600, initial-scale=1" />
   <title>Presentation Manager</title>
   <script src="/js/jquery-1.11.2.min.js"></script>
-  <script>
-      function autoclick(id) {
-      var a = $(id)[0];
-      var evObj = document.createEvent('MouseEvents');
-      evObj.initMouseEvent('click', true, true, window);
-      a.dispatchEvent(evObj); }
-  </script>
   <script src="/js/sorttable.js"></script>
-  <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
-
-
+  <!--<script type="text/javascript" src="js/plupload.full.min.js"></script>-->
+  <style type="text/css">@import url(/static/css/plupload.queue.css);</style>
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    google.load("jquery", "1.4");
+  </script>
+  <script type="text/javascript" src="/static/plupload/gears_init.js"></script>
+  <script type="text/javascript" src="/static/plupload/plupload.full.min.js"></script>
+  <script type="text/javascript" src="/static/plupload/jquery.plupload.queue.min.js"></script>
+  
 </head>
 <body>
 <!-- Header -->
@@ -36,7 +37,7 @@
           {% if user.account_type == "user" or user.account_type == "admin" or user.account_type ==  "super_admin" %}
           
           &nbsp;<span>|&nbsp;</span>
-          <a href="/admin">Admin</a>
+          <a href="{{uri_for('sessions')}}">Sessions</a>
           {% else %}
           <span>|</span>
           
@@ -56,18 +57,21 @@
     <!-- Main Nav -->
     <div id="navigation">
       <ul>
-        {% if user.account_type == 'user' or user.account_type == 'admin' or user.account_type == 'super_admin' %}
-        <li><a href="/admin/manage_sessions" id="sessions"><span>Sessions</span></a></li>
-        {% endif %}
-        {% if user.account_type == 'admin' or user.account_type == 'super_admin' %}
-        <li><a href="/utilities" id="utilities"><span>Utilities</span></a></li>
-        <li><a href="/admin/manage_users" id="users"><span>Users</span></a></li>
-        <li><a href="/admin/logs" id="logs"><span>Logs</span></a></li>
-        {% endif %}
         {% if user.account_type == 'super_admin' %}
-        <li><a href="/admin/conference_data" id="settings"><span>Module Settings</span></a></li>
-        <li><a href="/super_admin/manage_users" id="admins"><span>Admins</span></a></li>
+        <li><a href="{{uri_for('sessions')}}" id="sessions"><span>Sessions</span></a></li>
+        <li><a href="{{uri_for('utilities')}}" id="utilities"><span>Utilities</span></a></li>
+        <li><a href="{{uri_for('users')}}" id="users"><span>Users</span></a></li>
+        <li><a href="{{uri_for('logs')}}" id="logs"><span>Logs</span></a></li>
+        <li><a href="{{uri_for('conference_data')}}" id="settings"><span>Module Settings</span></a></li>
+        <li><a href="{{uri_for('all_users')}}" id="admins"><span>Admins</span></a></li>
         {% endif %}
+        {% if user.account_type == 'admin' %}
+        <li><a href="{{uri_for('sessions')}}" id="sessions"><span>Sessions</span></a></li>
+        <li><a href="{{uri_for('utilities')}}" id="utilities"><span>Utilities</span></a></li>
+        <li><a href="{{uri_for('users')}}" id="users"><span>Users</span></a></li>
+        <li><a href="{{uri_for('logs', offset =  'None')}}" id="logs"><span>Logs</span></a></li>
+        {% endif %}
+
       </ul>
     </div>
     <!-- End Main Nav -->

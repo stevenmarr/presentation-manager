@@ -2,7 +2,7 @@
 import urllib
 
 from google.appengine.ext import blobstore, db
-from models import SessionData, AppEventData
+from models.dbmodels import SessionData, AppEventData
 from google.appengine.ext.webapp import blobstore_handlers
 
 import webapp2

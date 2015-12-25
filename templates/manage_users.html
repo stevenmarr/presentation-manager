@@ -29,7 +29,7 @@
         <div class="box">
       <!-- Box Head -->
           <div class="box-head">
-            <h2 class="left">Current Users</h2>
+            <h2 class="left">Presenters</h2>
 
           </div>
 
@@ -57,7 +57,7 @@
                 {% else %}
                   <td class="ac"><img src="/img/thumb-down.png" height="20" width="20" alt="False" title = "False"></td>
                 {% endif %}
-                <form action="/admin/delete_user_account" method="POST">
+                <form action="{{uri_for('delete_user')}}" method="POST">
                   <td class = "ac"><input type="hidden" name="user_id" value="{{user.email}}"/>
                   <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/></td>
                 </form>
@@ -72,14 +72,14 @@
         <div class="box">
           <!-- Box Head -->
           <div class="box-head">
-            <h2>Add New User</h2>
+            <h2>Add New Presenter</h2>
           </div>
           <!-- End Box Head -->
 
 
             <!-- Form -->
             <div class="form">
-              <form action="/admin/add_user_account" method="POST">
+              <form action="{{uri_for('add_user')}}" method="POST">
                 <p>
                   <div>{{ form.firstname.label }} {{ form.firstname(class="field size1") }}</div>
                   {% if form.firstname.errors %}

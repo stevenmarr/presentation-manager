@@ -1,4 +1,5 @@
-{% extends "main.html" %}
+{% extends "main.html" %} 
+
 {% block maincontent %}
 <script>$('#sessions').toggleClass('active')</script>
 <!-- Container -->
@@ -30,11 +31,13 @@
           <!-- Box Head -->
           <div class="box-head">
             <h2 class="left">Current Sessions &nbsp;|&nbsp;</h2>
-            {% if dates %}
-            {% for date in dates %}&nbsp;
-              <a href="{{uri_for('session_by_date', date=date)}}"><font color="FFFFFF">{{dates[date]}}</font></a>
-              &nbsp;{% endfor %}
-            {% endif %}
+            
+           {# {% for date in dates %}
+              &nbsp;
+              <a href="{{uri_for('session_by_date', date=date)}}"><font color="FFFFFF">Date</font></a>
+              &nbsp;
+              {% endfor %} #}
+            
           </div>
           <!-- End Box Head -->
           <!-- Table -->
@@ -66,21 +69,24 @@
                 <td>{{session.name}}</td>
                 <td>{{session.room}}</td>
                 <td>
-                      {{session.presenter[0]}}, {{session.presenter[1]}}
+                    {{session.presenter[0]}}, {{session.presenter[1]}}
                 </td>
-                <td class="ac">{{session.date}} {{session.time}}</td>
-                      <!-- Session Edits -->
+                {% if session.datetime %}
+                <td class="ac">{{session.datetime.date()}} {{session.datetime.strftime("%H:%M %p")}}</td>
+                {% else %}
+                <td class="ac"></td>
+                {% endif %}     
+                <!-- Session Edits -->
               
                 <td class="ac">
-                <form action="{{uri_for('session_edit')}}" method="POST">
-                  <input type="hidden" name="session_key" value="{{session.key()}}"/>
-                    <input type="image" src="/img/edit-icon.png" name="submit" alt="Submit" width="20" height="20"/>
-                    </form>
-                  </td>
+                  <a href="{{uri_for('update_session', key=session.key.urlsafe())}}">
+                    <img src="/img/edit-icon.png" width="20" height ="20" alt = "Edit Session">
+                    
+                </td>
                   <!-- Session Deletes -->
                   <td class="ac">
-                  <form action={{uri_for('session_delete')}} method="POST">
-                    <input type="hidden" name="session_key" value="{{session.key()}}">
+                  <form action="{{uri_for('session_delete')}}" method="POST">
+                    <input type="hidden" name="session_key" value="{{session.key.urlsafe()}}">
                       <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/>
                     </form>
                   </td>
@@ -92,7 +98,7 @@
                 </form></td>
                 <!-- Presentation URL -->
                 <!-- Download Presentation -->
-                {% if session.blob_store_key == None %}
+                {% if session.blob_store_key == None %} 
                 <td class="ac" ><img src = "/img/thumb-down.png" width="20" height ="20" alt = "No File"></a></td>
                 {% else %}
                 <td class="ac" ><img src = "/img/thumb-up.png" width="20" height ="20" alt = "File"></a></td>
@@ -138,17 +144,12 @@
                 {% endif %}
               </p>
               <p>
-                <div>{{ form.date.label }} {{ form.date(class="field size2") }}</div>
-                {% if form.date.errors %}
+                <div>{{ form.datetime.label }} {{ form.datetime(class="field size2") }}</div>
+                {% if form.datetime.errors %}
                   <ul class="errors">{% for error in form.date.errors %}{{ error }}{% endfor %}</ul>
                 {% endif %}
               </p>
-              <p>
-                <div>{{ form.time.label }} {{ form.time(class="field size2") }}</div>
-                {% if form.time.errors %}
-                  <ul class="errors">{% for error in form.time.errors %}{{ error }}{% endfor %}</ul>
-                {% endif %}
-              </p>
+             
               </div>
               <!-- End Form -->
               <!-- Form Buttons -->
@@ -169,5 +170,5 @@
     <!-- End Shell -->
   </div>
   <!-- End Container -->
-  {% endblock %}
+{% endblock %} 
 

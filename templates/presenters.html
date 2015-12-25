@@ -15,6 +15,28 @@
       $('#warning2').fadeIn();});});
   
 </script>
+<script type="text/javascript">
+    $(function() {
+      uploader = $("#uploader").pluploadQueue({
+        runtimes: 'flash,html5,gears,html4',
+                                use_query_string: false,
+                                multipart: true,
+                                flash_swf_url: '/static/plupload/plupload.flash.swf',
+                                filters: [{title:'ppt', extensions:'mp4'}],
+      }).pluploadQueue();
+      uploader.bind('UploadFile', function(up, file) {
+        $.ajax({
+            url: '/generate_upload_url',
+            async: false,
+            success: function(data) {
+              up.settings.url = data;
+            },
+        });
+      });
+    });
+  </script>
+
+
 </div>
 <!-- End Header -->
 
@@ -69,13 +91,13 @@
                   <th width = "15%" class="ac">Filename</th>
                   <th width ="5%" class="ac">View Presentation</th>
                   <th width ="5%" class="ac">Delete Presentation</th>
-                  <th width ="5%" class="ac">Upload Presentation</th>
+                  <th width ="20%" class="ac">Upload Presentation</th>
                   <th></th>
                 </tr>
                 {% for session in sessions %}
                 <tr height = "75px">
                   <td>{{session.name}}</td>
-                  <td>{{session.date_time}}</td>
+                  <td>{{session.datetime}}</td>
                    {% if session.filename %}
                   <td class="ac">{{session.filename}}</td>
                     {% else %}
@@ -87,7 +109,7 @@
                     <td class="ac">--</td>
                 {% else %}
                   <td class="ac" >
-                    <a href = "{{'/serve/%s' % session.blob_store_key.key()}}">
+                    <a href = "{{'/serve/%s' % session.blob_store_key}}">
                       <img src = "/img/open-file-icon.png" width="20" height ="20" alt = "Open file"></a>
 
                   </td>
@@ -98,22 +120,26 @@
                     <td class="ac">--</td>
                 {% else %}
                     <td class="ac">
-                      <form action="{{'/delete/%s' % session.blob_store_key.key()}}" method="POST">
-                        <input type="hidden" name="session_key" value="{{session.key()}}">
+                      <form action="{{'/delete/%s' % session.blob_store_key}}" method="POST">
+                        <input type="hidden" name="session_key" value="{{session.key.urlsafe()}}">
                         <input type="image" src="/img/delete-icon.png" name="submit" alt="Submit" width="20" height="20"/>
                       </form>
                     </td>
                 {% endif %}
                 <!--****************************-->
                 <!-- Upload presentation -->
-                 <td class="ac">
-                      <form id="123" action="{{upload_urls[session.name]}}" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="session_key" value="{{session.key()}}">
-                        <input type="hidden" name="blob_store_key" value="{{session.blob_store_key}}">
-                        <input type="file" name="file"  class = "button" value="upload file"/>
+                 
 
-                 </td>
+
                  <td class="ac">
+                  <form>
+                <div id="uploader">
+                </div>
+        </form>
+                     
+                    
+                  </td>
+                <!-- <td class="ac">
                         <div id = "upload-icon">
                             
                             <input id="123" type="image" src="/img/upload-icon.png"  name="submit" alt="Submit" width="20" height="20"/>
@@ -122,9 +148,11 @@
                         <div id = "icon">
                           <img src="/img/small-loading.gif" width="20" height="20"/>
                         </div>
-                      </form>
-                </td>
+                      
+                </td>-->
+              
                 {% endfor %}
+                
                 </tr>
              </table>
 
