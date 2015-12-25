@@ -1,7 +1,36 @@
 import webapp2
 import os
+import datetime
 
 from webapp2_extras import jinja2, sessions
+from textwrap import dedent
+from itertools import islice
+
+def format_log_entry(entry):
+    # Format any application logs that happened during this request.
+    logs = []
+    for log in entry.app_logs:
+        date = datetime.datetime.fromtimestamp(
+            log.time).strftime('%D %T UTC')
+        logs.append('Date: {}, Message: {}'.format(
+            date, log.message))
+
+    # Format the request log and include the application logs.
+    date = datetime.datetime.fromtimestamp(
+        entry.end_time).strftime('%D %T UTC')
+
+    output = dedent("""
+        Date: {}
+        IP: {}
+        Method: {}
+        Resource: {}
+        Logs:
+    """.format(date, entry.ip, entry.method, entry.resource))
+
+    output += '\n'.join(logs)
+
+    return output
+
 
 def presenter_required(handler):
   """
@@ -77,6 +106,8 @@ def jinja2_factory(app):
     j = jinja2.Jinja2(app)
     j.environment.globals.update({
         'uri_for': webapp2.uri_for,
+        'format_log_entry': format_log_entry,
+        'islice': islice,
     })
     return j
 
