@@ -103,3 +103,8 @@ indexes:
   properties:
   - name: module
   - name: lastname
+
+- kind: User
+  ancestor: yes
+  properties:
+  - name: account_type
