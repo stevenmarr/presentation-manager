@@ -1,39 +1,61 @@
 
 from mainh import BaseHandler
 from helpers import user_required
-from models import AppEventData
+import logging
+
+import base64
+import datetime
+from itertools import islice
+from textwrap import dedent
+import time
+
+from helpers import format_log_entry
+from google.appengine.api.logservice import logservice
+import webapp2
+
+
+def get_logs(offset=None):
+    # Logs are read backwards from the given end time. This specifies to read
+    # all logs up until now.
+    end_time = time.time()
+
+    logs = logservice.fetch(
+        end_time=end_time,
+        offset=offset,
+        minimum_log_level=logservice.LOG_LEVEL_INFO,
+        include_app_logs=True)
+
+    return logs
+
 
 class LogsHandler(BaseHandler):
     @user_required
-    def get(self):
-        self.render_response('logs.html',
-            user_events = AppEventData.query('user', self.module),
-            session_events = AppEventData.query('session', self.module),
-            file_events =  AppEventData.query('events', self.module))
+    def get(self, offset):
+        formatted_logs = []
+        if offset == 'None': offset = None
+        #offset = self.request.get('offset', None)
+        if offset:
+            offset = base64.urlsafe_b64decode(str(offset))
 
-# old handler, refactored 20151206
-"""
-class LogsHandler(BaseHandler):
-    @user_required
-    def get(self):
-        user_events = data_cache.get('%s-user_events'% self.module)
-        if user_events == None:
-            user_events = db.GqlQuery("SELECT * FROM AppEventData WHERE event_type = 'user' and module = '%s' ORDER BY time_stamp DESC LIMIT 50"% self.module)
-            
-            logging.info('AppEventData DB Query')
-            data_cache.set('%s-user_events'% self.module, user_events)
-        session_events = data_cache.get('%s-session_events'% self.module)
-        if session_events == None:
-            session_events = db.GqlQuery("SELECT * FROM AppEventData WHERE event_type = 'session' and module = '%s' ORDER BY time_stamp DESC LIMIT 50"% self.module)
-            logging.info('AppEventData DB Query')
-            data_cache.set('%s-session_events'% self.module, session_events)
-        file_events = data_cache.get('%s-file_events'% self.module)
-        if file_events == None:
-            file_events = db.GqlQuery("SELECT * FROM AppEventData WHERE event_type = 'file' and module = '%s' ORDER BY time_stamp DESC LIMIT 50"% self.module)
-            logging.info('AppEventData DB Query')
-            data_cache.set('%s-file_events'% self.module, file_events)
-        self.render_response(   'logs.html',
-                                user_events =           user_events,
-                                session_events =        session_events,
-                                file_events =           file_events)
-"""
+        # Get the logs given the specified offset.
+
+        logs = get_logs(offset=offset)
+        #logging.info('logs dir %s' % logs.__iter__.__doc__)
+        #if not offset: offset = 10
+        # Output the first 10 logs.
+        log = None
+        for log in islice(logs, 10):
+            formatted_logs.append(format(format_log_entry(log)))
+
+            offset = log.offset
+
+        if not log:
+            formatted_logs.append('No log entries found.')
+        #    self.response.write('No log entries found.')
+        self.render_response('logs.html', logs = formatted_logs, offset = base64.urlsafe_b64encode(offset))
+        
+        # Add a link to view more log entries.
+        #elif offset:
+        #    self.response.write(
+        #        '<a href="/?offset={}"">More</a'.format(
+        #            base64.urlsafe_b64encode(offset)))
