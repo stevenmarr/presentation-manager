@@ -2,17 +2,25 @@
 import webapp2
 import logging
 import time
+import os
+import pdb
 
+from google.appengine.ext import ndb
+from google.appengine.ext.webapp import template
 from google.appengine.api import modules
 from webapp2_extras import sessions, jinja2, auth
 #from webapp2_extras import 
 
 from helpers import jinja2_factory
-from models import ConferenceData, SessionData, User, data_cache
+from models.dbmodels import ConferenceData, SessionData, User
+
+log = logging.getLogger(__name__)
+
+
+
 
 class BaseHandler(webapp2.RequestHandler):
   module = modules.get_current_module_name()
-
   @webapp2.cached_property
   def auth(self):
     """Shortcut to access the auth instance as a property."""
@@ -58,62 +66,35 @@ class BaseHandler(webapp2.RequestHandler):
       params = {}
     user = self.user_info
     params['user'] = user
-    path = os.path.join(os.path.dirname(__file__), 'templates', view_filename)
+    path = os.path.join(os.path.dirname(__file__), '../templates/', view_filename)
+    #pdb.set_trace()
     self.response.out.write(template.render(path, params))
 
   @webapp2.cached_property
   def jinja2(self):
-    return jinja2.get_jinja2(factory=jinja2_factory, app=self.app)
+    return jinja2.get_jinja2(factory=jinja2_factory, app=None)
 
   def render_response(self, _template, **context):#jinja
-    conference_data = self.get_conference_data()
+    conference_data = ConferenceData.get_config()
     ctx = {'user': self.user_info, 'conference_data': conference_data}
     ctx.update(context)
     rv = self.jinja2.render_template(_template, **ctx)
     self.response.write(rv)
 
   def upload_to_db(self):
-    return self.get_conference_data().dbox_update
-
-  def get_conference_data(self):
-    conference_data = data_cache.get('%s-conference_data'% self.module)
-    if not conference_data:
-      conference_data = ConferenceData.all().filter('module =', self.module).get()
-      logging.info('CoferenceData DB Query')
-      data_cache.set('%s-conference_data'% self.module, conference_data)
-      if not conference_data:
-        entry=ConferenceData()
-        entry.put()
-        time.sleep(.25)
-        data_cache.set('%s-conference_data'% self.module, None)
-        return entry
-    return conference_data
-
-  def get_sessions(self, user_id = None):
-    if user_id:
-      return SessionData.all().filter('module =', self.module)\
-              .filter('user_id =', user_id).order('-name')
-    sessions = data_cache.get('%s-sessions'% self.module)
-    if not sessions:
-      sessions = SessionData.all().filter('module =', self.module).order('-name')
-      logging.info('SessionData DB Query')
-      data_cache.set('%s-sessions'% self.module, sessions)
-    if not SessionData.all().get():
-      return None
-    return sessions
+    return ConferenceData.get_config().dbox_update
   
   def get_users(self, user_id = None):
     if user_id:
       if user_id:
-        return [[g.lastname, g.firstname, g.email] for g in (User.query(User.auth_ids == '%s|%s'% (self.module, user_id)))][0]
+        return [[g.lastname, g.firstname, g.email] for g in (User.query(User.auth_ids == user_id))][0]
     return User.query(User.module == self.module).order(User.lastname)
   
   def get_users_tuple(self):
-    users = data_cache.get('%s-users-tuple'% self.module)
-    if users == None:
-      users = [(g.email, g.lastname+', '+g.firstname+', '+g.email ) for g in self.get_users()]
-      logging.info('User DB Query')
-      data_cache.set('%s-users-tuple'% self.module, users)
+    #users = data_cache.get('%s-users-tuple'% self.module)
+    #if users == None:
+    users = [(g.email, g.lastname+', '+g.firstname+', '+g.email ) for g in self.get_users()]
+    #logging.info('User DB Query')
     return users
 
   def display_message(self, message):
